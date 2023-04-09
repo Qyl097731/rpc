@@ -23,18 +23,19 @@ public class RpcServiceManager {
      *
      * @param <T>
      * @param object
+     * @param bean
      */
-    public <T> void register(Class<T> object,T bean) {
+    public <T> void register(Class<T> object, T bean) {
         Method[] methods = ReflectionUtils.getPublicMethods (object);
         for (Method method : methods) {
             ServiceDescriptor descriptor = ServiceDescriptor.from (object, method);
-            RpcServiceInstance serviceInstance = new RpcServiceInstance(bean,method);
-            serviceMap.put (descriptor,serviceInstance);
-            log.info ("register service: {} {}", descriptor.getClazz (),descriptor.getMethod ());
+            RpcServiceInstance serviceInstance = new RpcServiceInstance (bean, method);
+            serviceMap.put (descriptor, serviceInstance);
+            log.info ("register service: {} {}", descriptor.getClazz (), descriptor.getMethod ());
         }
     }
 
-    public  RpcServiceInstance lookup(Request request){
+    public RpcServiceInstance lookup(Request request) {
         ServiceDescriptor descriptor = request.getService ();
         return serviceMap.get (descriptor);
     }

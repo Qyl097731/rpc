@@ -10,7 +10,6 @@ public class Client {
     public static void main(String[] args) {
         RpcClient client = new RpcClient ();
         UserService proxy = client.getProxy (UserService.class);
-
         System.out.println (proxy.selectList ());
     }
 }

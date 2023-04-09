@@ -38,8 +38,8 @@ public class RpcServer {
         this.invoker = new ServiceInvoker ();
     }
 
-    public <T> void register(Class<T> object, T bean) {
-        manager.register (object,bean);
+    public <T> void register(Class<T> object,T bean) {
+        manager.register (object, bean);
     }
 
     public void start() throws Exception {

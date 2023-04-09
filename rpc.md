@@ -118,6 +118,19 @@ Client和Server端，基于HTTP实现
 
 千万不能写成clazz.getMethods(),否则会把很多Object类中的public方法包含进来，如hashCode
 
+### com.sun.proxy.$Proxy2 cannot be cast to com.nju.http.example.UserService
+
+```java
+    public <T> T getProxy(Class<T> clazz){
+        return (T) Proxy.newProxyInstance (clazz.getClassLoader (),
+                new Class[]{clazz}, // 这里是关键，如果clazz.getInterface() 返回的数组的第一个class不是T 那么就不能转成T
+                new RemoteInvocationHandler(clazz,encoder,decoder,selector));
+    }
+```
+### java.net.ConnectException: Connection refused: connect
+
+Server看一下启动没有
+
 ```java
 public static<T> Method[] getPublicMethods(Class<T> clazz){
     return Arrays.stream (clazz.getDeclaredMethods ())
@@ -140,11 +153,13 @@ public static<T> Method[] getPublicMethods(Class<T> clazz){
 
 # 总结
 
-## 难点
+## 亮点
+
+### Maven多模块的管理
 
 ### Jetty嵌入
 
-- Server 
+- Server
 
 通过Jetty Server 来做网络监听
 
@@ -166,10 +181,6 @@ public static<T> Method[] getPublicMethods(Class<T> clazz){
 
 通过该RemoteInvocationHandler中的invoke来做方法增强
 
-## 亮点
-
-- Maven多模块的管理
-- 通过JDK动态代理进行服务调用 
 
 ## 缺点
 

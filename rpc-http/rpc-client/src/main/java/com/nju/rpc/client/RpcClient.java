@@ -5,6 +5,7 @@ import com.nju.codec.Encoder;
 import com.nju.rpc.ReflectionUtils;
 
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
 
 /**
  * @description 客户端
@@ -31,7 +32,7 @@ public class RpcClient {
 
     public <T> T getProxy(Class<T> clazz){
         return (T) Proxy.newProxyInstance (clazz.getClassLoader (),
-                clazz.getInterfaces (),
+                new Class[]{clazz},
                 new RemoteInvocationHandler(clazz,encoder,decoder,selector));
     }
 }
