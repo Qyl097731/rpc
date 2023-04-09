@@ -135,17 +135,59 @@ public static<T> Method[] getPublicMethods(Class<T> clazz){
 > 4. HttpURLConnection是基于HTTP协议的，其底层通过socket通信实现。如果不设置超时（timeout），在网络异常的情况下，可能会导致程序僵死而不继续往下执行。 
 > 5. HTTP正文的内容是通过OutputStream流写入的， 向流中写入的数据不会立即发送到网络，而是存在于内存缓冲区中，待流关闭时，根据写入的内容生成HTTP正文。 
 > 6. 调用getInputStream()方法时，返回一个输入流，用于从中读取服务器对于HTTP请求的返回信息。 
-> 7.我们可以使用HttpURLConnection.connect()方法手动的发送一个HTTP请求，但是如果要获取HTTP响应的时候，请求就会自动的发起，比如我们使用HttpURLConnection.getInputStream
+> 7. 我们可以使用HttpURLConnection.connect()方法手动的发送一个HTTP请求，但是如果要获取HTTP响应的时候，请求就会自动的发起，比如我们使用HttpURLConnection.getInputStream
      > ()方法的时候，所以完全没有必要调用connect()方法。
 
 # 总结
 
+## 难点
+
+### Jetty嵌入
+
+- Server 
+
+通过Jetty Server 来做网络监听
+
+- ServletContextHandler
+
+通过Servlet来处理，所以需要ServletContextHandler注册到Server
+
+- ServletHolder
+
+托管所有的Servlet
+
+### 动态代理
+
+- Proxy.newProxyInstance
+
+通过JDK动态代理来创建动态代理对象
+
+- RemoteInvocationHandler implements InvocationHandler
+
+通过该RemoteInvocationHandler中的invoke来做方法增强
+
 ## 亮点
 
 - Maven多模块的管理
-- 通过动态代理进行服务调用 
+- 通过JDK动态代理进行服务调用 
 
 ## 缺点
 
 - Java动态代理只能代理实现了接口的类
-- 
+- 使用的HTTP进行传输，是一种伪RPC
+- 安全性：通过JSON进行序列化，且没有对通道进行安全校验
+     
+     可以通过HTTPS或者对序列化进行加密或者网络连接时刻建立身份验证
+
+- 服务端处理能力
+
+     ServerTransport实现的时候，通过Jetty Server内置的线程池进行Client请求，尽量使用自己的线程池，
+     最好在RPC返回的时候，在返回数据的通道最好也是一个队列的形式
+
+- 注册中心
+
+     server地址的注册，client能够通过注册中心自动发现server地址。
+
+- 集成能力
+     
+     和Springboot如何结合？如尝试让springboot自动帮我们创建server或者client，如beanfactory来自动创建代理对象

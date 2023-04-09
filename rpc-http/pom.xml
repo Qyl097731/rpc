@@ -20,6 +20,7 @@
         <module>rpc-transporter</module>
         <module>rpc-client</module>
         <module>rpc-server</module>
+        <module>rpc-http-example</module>
     </modules>
 
     <properties>

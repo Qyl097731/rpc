@@ -3,7 +3,6 @@ package com.nju.transporter;
 import com.nju.rpc.Peer;
 
 import java.io.InputStream;
-import java.net.MalformedURLException;
 
 /**
  * @description 客户端传输
@@ -16,10 +15,8 @@ import java.net.MalformedURLException;
 public interface TransportClient {
     /**
      * 连接
-     * @param peer
-     * @throws MalformedURLException
      */
-    void connect(Peer peer) throws MalformedURLException;
+    void connect(Peer peer);
 
     /**
      * 发送数据

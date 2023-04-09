@@ -1,5 +1,6 @@
 package com.nju.transporter;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -14,5 +15,5 @@ public interface RequestHandler {
      * @param input
      * @param output
      */
-    void onRequest(InputStream input, OutputStream output);
+    void onRequest(InputStream input, OutputStream output) throws IOException;
 }

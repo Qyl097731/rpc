@@ -2,6 +2,7 @@ package com.nju.rpc;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @description RPC请求
@@ -10,6 +11,7 @@ import lombok.Data;
  */
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class Request {
     /**
      * 请求的服务

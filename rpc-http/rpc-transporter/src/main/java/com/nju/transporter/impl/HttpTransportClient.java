@@ -8,6 +8,7 @@ import org.apache.commons.io.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -18,51 +19,40 @@ import java.net.URL;
  */
 @Slf4j
 public class HttpTransportClient implements TransportClient {
-    private URL url;
+    private String url;
 
     private HttpURLConnection conn;
 
     @Override
-    public void connect(Peer peer){
-        try {
-            /**
-             * 连接设置参数
-             */
-            this.url = new URL ("http",peer.getHost (),peer.getPort (),null);
-            this.conn = (HttpURLConnection)url.openConnection ();
-            this.conn.setDoInput (true);
-            this.conn.setDoInput (true);
-            this.conn.setUseCaches (false);
-            this.conn.setRequestMethod ("POST");
-            // 小小的优化，设置超时时间(以毫秒为单位)，否则可能网路很慢，严重影响后续任务推进
-            this.conn.setConnectTimeout (3000);
-            this.conn.setReadTimeout (3000);
-            this.conn.connect ();
-        } catch (IOException e) {
-            log.info ("连接失败....");
-            if (this.conn != null){
-                close ();
-            }
-            throw new RuntimeException (e);
-        }
+    public void connect(Peer peer) {
+        url = "http://" + peer.getHost () + ":" + peer.getPort ();
     }
 
+    /**
+     * 先复制数据流到conn的输出流，getResponseCode\getInputStream\getErrorStream的时候才会把数据真正发送出去
+     */
     @Override
     public InputStream write(InputStream data) {
         try {
-            /**
-             * 先复制数据流到conn的输出流，getResponseCode\getInputStream\getErrorStream的时候才会把数据真正发送出去
-             */
-            IOUtils.copy (data,conn.getOutputStream ());
+            conn = (HttpURLConnection) new URL(url).openConnection ();
+            conn.setDoInput (true);
+            conn.setDoOutput (true);
+            conn.setUseCaches (false);
+            conn.setRequestMethod ("POST");
+            // 小小的优化，设置超时时间(以毫秒为单位)，否则可能网路很慢，严重影响后续任务推进
+            conn.setConnectTimeout (3000);
+            conn.setReadTimeout (3000);
+            conn.connect ();
+            IOUtils.copy (data, conn.getOutputStream ());
             int code = conn.getResponseCode ();
-            if (code == HttpURLConnection.HTTP_OK){
+            if (code == HttpURLConnection.HTTP_OK) {
                 return conn.getInputStream ();
-            }else {
+            } else {
                 return conn.getErrorStream ();
             }
         } catch (IOException e) {
-            log.info ("信息发送失败....");
-            if (this.conn != null){
+            log.info ("信息发送失败...." + e.getMessage ());
+            if (this.conn != null) {
                 close ();
             }
             throw new RuntimeException (e);
