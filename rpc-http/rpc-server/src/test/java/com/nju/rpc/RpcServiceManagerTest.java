@@ -22,14 +22,14 @@ class RpcServiceManagerTest {
 
     @Test
     void register() {
-        manager.register (ServiceTestBean.class, );
+        manager.register (ServiceTestBean.class, new ServiceTestBean ());
     }
 
     @Test
     void lookup() throws NoSuchMethodException {
         Request request = new Request ();
         Class<?> clazz = ServiceTestBean.class;
-        manager.register (ServiceTestBean.class, );
+        manager.register (ServiceTestBean.class, new ServiceTestBean ());
 
         Method method = clazz.getMethod ("sayHello");
         ServiceDescriptor descriptor = ServiceDescriptor.from (clazz, method);
