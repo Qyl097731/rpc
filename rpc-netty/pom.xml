@@ -14,6 +14,7 @@
     <modules>
         <module>rpc-netty-common</module>
         <module>rpc-netty-server</module>
+        <module>rpc-netty-client</module>
     </modules>
 
     <properties>
@@ -21,7 +22,48 @@
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <common.version>2.11.0</common.version>
+        <junit-jupiter-api.version>5.9.2</junit-jupiter-api.version>
+        <lombok.version>1.18.26</lombok.version>
+        <slf4j.version>2.0.5</slf4j.version>
+        <logback-classic.version>1.3.0</logback-classic.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${common.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit-jupiter-api.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback-classic.version}</version>
+        </dependency>
+    </dependencies>
+
     <!--    指定编译版本   -->
     <build>
         <plugins>
