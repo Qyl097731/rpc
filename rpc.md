@@ -94,22 +94,30 @@ Client和Server端，基于HTTP实现
 
 ### 创建工程、指定协议、通用工具方法
 
+rpc-common、rpc-protocol
+
 ### 实现序列化模块
+
+rpc-codec
 
 ### 实现网络模块
 
+rpc-transporter
 通过使用场景，对网络做一层抽象
 
 ### 实现Server模块
 
+rpc-server
 服务暴露模块，并且对服务做管理
 
 ### 实现Client模块
 
+rpc-client
 动态代理，代理对象内部会通过网络通信与server通信
 
 ### rpc-http使用案例    
 
+rpc-http-example
 对自定义实现的框架进行使用
 
 ## 错误记录
