@@ -2,6 +2,7 @@ package com.rpc.netty.utils;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -34,5 +35,23 @@ public class ReflectionUtils {
             log.error ("create instance error " + e.getMessage ());
             throw new RuntimeException (e);
         }
+    }
+
+    /**
+     * 调用方法
+     * @param target
+     * @param method
+     * @param args
+     * @return 返回代理结果
+     */
+    public static Object invoke(Object target,Method method,Object... args){
+        Object obj;
+        try {
+            obj = method.invoke(target, args);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            log.error("invoke error " + e.getMessage ());
+            throw new RuntimeException (e);
+        }
+        return obj;
     }
 }

@@ -10,12 +10,15 @@ import io.netty.handler.codec.MessageToByteEncoder;
  * @date 2023/4/10 21:56
  * @author: qyl
  */
-public class RpcEncoder extends MessageToByteEncoder<RpcRequest>{
+public class RpcEncoder extends MessageToByteEncoder{
 
     private Serializer serializer;
 
-    public RpcEncoder(Serializer serializer) {
+    private Class<?> clazz;
+
+    public RpcEncoder(Serializer serializer, Class<?> clazz) {
         this.serializer = serializer;
+        this.clazz = clazz;
     }
 
     /**
@@ -28,7 +31,7 @@ public class RpcEncoder extends MessageToByteEncoder<RpcRequest>{
      * @throws Exception is thrown if an error occurs
      */
     @Override
-    protected void encode(ChannelHandlerContext ctx, RpcRequest msg, ByteBuf out) throws Exception {
+    protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) throws Exception {
         byte[] bytes = serializer.serialize (msg);
         out.writeInt(bytes.length);
         out.writeBytes (bytes);

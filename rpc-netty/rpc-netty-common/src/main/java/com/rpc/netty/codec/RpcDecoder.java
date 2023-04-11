@@ -18,7 +18,7 @@ public class RpcDecoder extends ByteToMessageDecoder {
 
     private Class<?> genericClass;
 
-    private RpcDecoder(Serializer serializer, Class<?> genericClass) {
+    public RpcDecoder(Serializer serializer, Class<?> genericClass) {
         this.serializer = serializer;
         this.genericClass = genericClass;
     }

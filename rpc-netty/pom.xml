@@ -15,6 +15,7 @@
         <module>rpc-netty-common</module>
         <module>rpc-netty-server</module>
         <module>rpc-netty-client</module>
+        <module>rpc-netty-example</module>
     </modules>
 
     <properties>

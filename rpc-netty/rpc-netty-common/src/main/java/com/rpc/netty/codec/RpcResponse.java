@@ -10,6 +10,10 @@ import lombok.Data;
 @Data
 public class RpcResponse {
     private Integer code;
-
+    private Object result;
     private String msg;
+
+    public boolean isSuccess() {
+        return code == 200;
+    }
 }

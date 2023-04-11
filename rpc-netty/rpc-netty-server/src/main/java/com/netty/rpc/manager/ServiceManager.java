@@ -19,10 +19,11 @@ public class ServiceManager {
     }
 
     private static class ServiceHolder {
-        private static final ConcurrentHashMap<ServiceDescriptor, Object> singletonInstance = new ConcurrentHashMap<> ();
+        private static final ConcurrentHashMap<ServiceDescriptor, ServiceInstance> singletonInstance =
+                new ConcurrentHashMap<> ();
     }
 
-    private static ConcurrentHashMap<ServiceDescriptor, Object> services;
+    private static ConcurrentHashMap<ServiceDescriptor, ServiceInstance> services;
 
     public static void init() {
         services = ServiceHolder.singletonInstance;
@@ -32,7 +33,8 @@ public class ServiceManager {
         Method[] methods = ReflectionUtils.getPublicMethods (clazz);
         for (Method method : methods) {
             ServiceDescriptor descriptor = ServiceDescriptor.of (clazz, method);
-            services.put (descriptor, instance);
+            ServiceInstance service = new ServiceInstance (instance, method);
+            services.put (descriptor, service);
             log.info ("{} {} success to register ", instance.getClass ().getName (), method.getName ());
         }
     }
@@ -43,7 +45,7 @@ public class ServiceManager {
      * @return
      * @param <T>
      */
-    public <T> T lookup(RpcRequest request) {
+    public static <T> T lookup(RpcRequest request) {
         ServiceDescriptor desc = request.getServiceDescriptor ();
         return (T)services.getOrDefault(desc, null);
     }
