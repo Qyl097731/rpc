@@ -1,5 +1,6 @@
 package com.netty.rpc;
 
+import com.netty.rpc.handler.RpcClientHandler;
 import com.rpc.netty.codec.RpcDecoder;
 import com.rpc.netty.codec.RpcEncoder;
 import com.rpc.netty.codec.RpcRequest;
@@ -32,7 +33,7 @@ public class NettyClientChannelInitializer extends ChannelInitializer<Channel> {
         ChannelPipeline pipeline = ch.pipeline ();
         pipeline.addLast (new RpcEncoder (new KryoSerializer (), RpcRequest.class));
         pipeline.addLast (new RpcDecoder (new KryoSerializer (), RpcResponse.class));
-//        pipeline.addLast(new RpcClientHandler<RpcResponse> ());
+        pipeline.addLast(new RpcClientHandler());
     }
 
     /**
