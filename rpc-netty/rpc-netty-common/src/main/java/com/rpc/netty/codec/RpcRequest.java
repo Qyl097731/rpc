@@ -1,5 +1,6 @@
 package com.rpc.netty.codec;
 
+import com.rpc.netty.protocol.RpcPeer;
 import com.rpc.netty.protocol.ServiceDescriptor;
 import lombok.Data;
 

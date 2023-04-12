@@ -1,5 +1,6 @@
 package com.netty.rpc.handler;
 
+import com.netty.rpc.connect.ConnectionManager;
 import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.codec.RpcResponse;
 import com.rpc.netty.protocol.ServiceDescriptor;
@@ -24,16 +25,18 @@ public class RemoteInvocationHandler implements InvocationHandler {
         RpcRequest request = new RpcRequest ();
         request.setServiceDescriptor (ServiceDescriptor.of (target, method));
         request.setParameters (args);
-        RpcResponse response = invokeRemote(request);
-        if (response.isSuccess()) {
-            return response.getResult();
+        RpcResponse response = invokeRemote (request);
+        if (response != null) {
+            return response.getResult ();
         }
         return null;
     }
 
     private RpcResponse invokeRemote(RpcRequest request) {
-        RpcClientHandler handler = new RpcClientHandler ();
-        handler.send (request);
-        return null;
+        ConnectionManager manager = ConnectionManager.getInstance ();
+        RpcClientHandler handler = manager.take ();
+        RpcResponse response = handler.send (request);
+        manager.put (handler, 1);
+        return response;
     }
 }

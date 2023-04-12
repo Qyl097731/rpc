@@ -8,6 +8,7 @@ package com.rpc.netty.serializer;
 public abstract class Serializer {
     /**
      * 序列化
+     *
      * @param obj
      * @return byte数组
      */
@@ -15,9 +16,10 @@ public abstract class Serializer {
 
     /**
      * 反序列化
+     *
      * @param input
      * @param clazz
      * @return clazz类型的对象
      */
-    public abstract <T> T deserialize(byte[] input,Class<T> clazz);
+    public abstract <T> T deserialize(byte[] input, Class<T> clazz);
 }

@@ -25,8 +25,8 @@ public class KryoSerializer extends Serializer {
     @Override
     public <T> byte[] serialize(T obj) {
         Kryo kryo = new Kryo ();
-        kryo.register (obj.getClass ());
         byte[] bytes = null;
+        kryo.setRegistrationRequired(false);
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream ();
              Output output = new Output (baos)) {
             kryo.writeObject (output, obj);
@@ -48,11 +48,11 @@ public class KryoSerializer extends Serializer {
     @Override
     public <T> T deserialize(byte[] bytes, Class<T> clazz) {
         Kryo kryo = new Kryo ();
-        kryo.register (clazz);
+        kryo.setRegistrationRequired(false);
         T obj = null;
         try (ByteArrayInputStream bis = new ByteArrayInputStream (bytes);
              Input input = new Input (bis)) {
-            obj = kryo.readObjectOrNull (input, clazz);
+            obj = kryo.readObject (input, clazz);
         } catch (IOException e) {
             log.error ("反序列化失败..." + e.getMessage ());
             throw new RuntimeException (e);

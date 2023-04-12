@@ -33,7 +33,7 @@ public class NettyServerInitializer extends ChannelInitializer<Channel> {
     protected void initChannel(Channel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline ();
         pipeline.addLast (new RpcEncoder (new KryoSerializer (), RpcRequest.class));
-        pipeline.addLast (new RpcDecoder (new KryoSerializer (), RpcResponse.class));
+        pipeline.addLast (new RpcDecoder (new KryoSerializer (), RpcRequest.class));
         pipeline.addLast (new NettyServerHandler ());
     }
 
