@@ -57,7 +57,7 @@ public class NettyClient {
                 new RemoteInvocationHandler (clazz));
     }
 
-    private void stop() {
+    public void stop() {
         group.shutdownGracefully ();
     }
 }

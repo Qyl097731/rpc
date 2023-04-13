@@ -39,7 +39,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
             response.setCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
             log.error("服务调用失败 ..." + e.getMessage ());
         }
-        ctx.channel ().writeAndFlush (response);
+        ctx.channel ().writeAndFlush (response).sync ();
     }
 
     @Override
