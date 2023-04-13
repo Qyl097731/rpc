@@ -48,6 +48,7 @@ public class ServiceDescriptor implements Serializable {
     public static <T> ServiceDescriptor of(Class<T> clazz, Method method) {
         ServiceDescriptor descriptor = new ServiceDescriptor ();
         descriptor.setClazz (clazz.getName ());
+        descriptor.setMethod (method.getName ());
         descriptor.setParameterTypes (method.getParameterTypes ());
         descriptor.setReturnType (method.getReturnType ().getTypeName ());
         return descriptor;

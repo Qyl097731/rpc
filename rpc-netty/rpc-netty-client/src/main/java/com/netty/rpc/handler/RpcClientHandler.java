@@ -11,6 +11,8 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.concurrent.Future;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.concurrent.Semaphore;
+
 
 /**
  * @description 代理类进行远程嗲用
@@ -22,10 +24,13 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
     private Channel channel;
     private RpcResponse response;
 
+    private Semaphore semaphore = new Semaphore (0);
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcResponse response) throws Exception {
         log.info ("收到服务端响应:{}", response);
         this.response = response;
+        semaphore.release (1);
     }
 
     @Override
@@ -37,6 +42,7 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
     public RpcResponse send(RpcRequest request){
         try {
             channel.writeAndFlush (request).sync ();
+            semaphore.acquire(1);
             return response;
         } catch (InterruptedException e) {
             log.error("发送请求异常", e);
