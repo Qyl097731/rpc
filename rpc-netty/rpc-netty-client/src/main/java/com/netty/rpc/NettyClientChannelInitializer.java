@@ -5,7 +5,7 @@ import com.rpc.netty.codec.RpcDecoder;
 import com.rpc.netty.codec.RpcEncoder;
 import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.codec.RpcResponse;
-import com.rpc.netty.serializer.KryoSerializer;
+import com.rpc.netty.serializer.kryo.KryoSerializer;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;

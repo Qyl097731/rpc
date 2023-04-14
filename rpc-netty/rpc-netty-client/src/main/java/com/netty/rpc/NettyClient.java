@@ -15,6 +15,10 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Proxy;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @description 客户端服务器
@@ -28,8 +32,6 @@ public class NettyClient {
     private static String remoteAddress = "127.0.0.1";
     private static int port = 3000;
 
-    private static int POOLSIZE = 10;
-
     public NettyClient() {
         this (remoteAddress, port);
     }
@@ -40,7 +42,6 @@ public class NettyClient {
         bootstrap.group (group)
                 .channel (NioSocketChannel.class)
                 .handler (new NettyClientChannelInitializer ());
-
         ChannelFuture future = null;
         try {
             future = bootstrap.connect (remoteAddress, port).sync ();
