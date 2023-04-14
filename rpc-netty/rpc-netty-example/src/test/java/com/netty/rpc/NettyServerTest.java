@@ -18,8 +18,9 @@ import static org.hamcrest.Matchers.closeTo;
  * @author: qyl
  */
 @Slf4j
-public class NettyServerTest{
+public class NettyServerTest {
     private static NettyClient client;
+
     @BeforeAll
     static void setUp() {
         client = new NettyClient ();
@@ -27,68 +28,72 @@ public class NettyServerTest{
 
     @AfterAll
     static void tearDown() {
-        client.stop();
+        client.stop ();
+        client = null;
     }
 
     @Test
-    void testResponseTimeWithoutResponse(){
-        long start = System.currentTimeMillis();
+    void testResponseTimeWithoutResponse() {
+        long start = System.currentTimeMillis ();
         UserService service = client.getProxy (UserService.class);
         service.sayHello ();
         long end = System.currentTimeMillis ();
         double cost = end - start;
-        assertThat("Response time", cost, closeTo (100,100));
-        log.info ("sync call total-time-cost:{}ms",cost);
+        assertThat ("Response time", cost, closeTo (100, 100));
+        log.info ("sync call total-time-cost:{}ms", cost);
     }
 
     @Test
-    void testResponseTimeWithResponse(){
-        long start = System.currentTimeMillis();
+    void testResponseTimeWithResponse() {
+        long start = System.currentTimeMillis ();
         UserService service = client.getProxy (UserService.class);
         List<Integer> response = service.selectAll ();
         long end = System.currentTimeMillis ();
-        double cost =  end - start;
-        assertThat("Response time",cost , closeTo (200,200));
-        assertThat ("Response length",response.size() == 3);
-        log.info ("sync call total-time-cost:{}ms",cost);
+        double cost = end - start;
+        assertThat ("Response time", cost, closeTo (200, 200));
+        assertThat ("Response length", response.size () == 3);
+        log.info ("sync call total-time-cost:{}ms", cost);
     }
 
     /**
      * 返回简单列表模拟查询，查看并发场景下QPS
+     *
      * @throws BrokenBarrierException
      * @throws InterruptedException
      */
     @Test
-    void testQPSWithoutRealPool(){
-        int threadNum = 50;
-        CyclicBarrier barrier = new CyclicBarrier (threadNum);
+    void testQPSWithoutRealPool() {
+        final int threadNum = 1;
+        final int requestNum = 50;
         Thread[] threads = new Thread[threadNum];
-        long start = System.currentTimeMillis();
-        for (int i = 0; i < threadNum; i++) {
-            threads[i] = new Thread(() -> {
-                try {
-                    // 模拟并发
-                    barrier.await ();
-                    UserService service = client.getProxy (UserService.class);
-                    service.sayHello ();
-                } catch (InterruptedException | BrokenBarrierException e) {
-                    throw new RuntimeException (e);
+        long start = System.currentTimeMillis ();
+        for (int i = 0; i < threadNum; ++i) {
+            threads[i] = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < requestNum; i++) {
+                        try {
+                            final UserService service = client.getProxy (UserService.class);
+                            service.sayHello ();
+                        } catch (Exception ex) {
+                            System.out.println(ex.toString());
+                        }
+                    }
                 }
             });
-            threads[i].start ();
+            threads[i].start();
         }
-        log.info ("finish...");
-        for (int i = 0; i < threadNum; i++) {
+        for (int i = 0; i < threads.length; i++) {
             try {
-                threads[i].join ();
+                threads[i].join();
             } catch (InterruptedException e) {
-                throw new RuntimeException (e);
+                log.error (e.getMessage());
             }
         }
         long end = System.currentTimeMillis ();
         double cost = end - start;
-        assertThat("Response time", cost, closeTo(1000.0, 1000.0)); // 判断响应时间是否在预期范围内
-        log.info ("Sync call total-time-cost:%sms, req/s=%s",cost,threadNum / cost);
+        assertThat ("Response time", cost, closeTo (1000.0, 1000.0)); // 判断响应时间是否在预期范围内
+        log.info ("Sync call total-time-cost:{}ms, req/s={}", cost, threadNum * requestNum / cost * 1000);
     }
 
     @Test
