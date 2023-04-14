@@ -28,7 +28,6 @@ public class NettyServerTest {
 
     @AfterAll
     static void tearDown() {
-        client.stop ();
         client = null;
     }
 
@@ -56,7 +55,7 @@ public class NettyServerTest {
     }
 
     /**
-     * 返回简单列表模拟查询，查看并发场景下QPS
+     * 模拟查询，查看并发场景下QPS
      *
      * @throws BrokenBarrierException
      * @throws InterruptedException
@@ -64,6 +63,47 @@ public class NettyServerTest {
     @Test
     void testQPSWithoutRealPool() {
         final int threadNum = 1;
+        final int requestNum = 50;
+        Thread[] threads = new Thread[threadNum];
+        long start = System.currentTimeMillis ();
+        for (int i = 0; i < threadNum; ++i) {
+            threads[i] = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < requestNum; i++) {
+                        try {
+                            final UserService service = client.getProxy (UserService.class);
+                            service.sayHello ();
+                        } catch (Exception ex) {
+                            System.out.println(ex.toString());
+                        }
+                    }
+                }
+            });
+            threads[i].start();
+        }
+        for (int i = 0; i < threads.length; i++) {
+            try {
+                threads[i].join();
+            } catch (InterruptedException e) {
+                log.error (e.getMessage());
+            }
+        }
+        long end = System.currentTimeMillis ();
+        double cost = end - start;
+        assertThat ("Response time", cost, closeTo (1000.0, 1000.0)); // 判断响应时间是否在预期范围内
+        log.info ("Sync call total-time-cost:{}ms, req/s={}", cost, threadNum * requestNum / cost * 1000);
+    }
+
+    /**
+     * 模拟查询，查看并发场景下QPS
+     *
+     * @throws BrokenBarrierException
+     * @throws InterruptedException
+     */
+    @Test
+    void testQPSWithRealPool() {
+        final int threadNum = 10;
         final int requestNum = 50;
         Thread[] threads = new Thread[threadNum];
         long start = System.currentTimeMillis ();

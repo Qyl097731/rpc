@@ -3,7 +3,8 @@ package com.netty.rpc.route.impl;
 import com.netty.rpc.handler.RpcClientHandler;
 import com.netty.rpc.route.LoadBalance;
 
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * @description 随机负载均衡
@@ -11,15 +12,10 @@ import java.util.concurrent.BlockingQueue;
  * @author: qyl
  */
 public class RandomLoadBalance implements LoadBalance {
-    // TODO 后面完善，现在假装随机
     @Override
-    public RpcClientHandler take(BlockingQueue<RpcClientHandler> pool) {
-        RpcClientHandler handler = null;
-        try {
-            handler = pool.take ();
-        } catch (InterruptedException e) {
-            throw new RuntimeException (e);
-        }
-        return handler;
+    public RpcClientHandler choose(CopyOnWriteArrayList<RpcClientHandler> pool) {
+        int size = pool.size ();
+        int random = ThreadLocalRandom.current().nextInt(size);
+        return pool.get(random);
     }
 }

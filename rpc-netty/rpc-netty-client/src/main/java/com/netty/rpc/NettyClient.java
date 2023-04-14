@@ -15,6 +15,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Proxy;
+import java.util.Objects;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -27,28 +28,12 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class NettyClient {
-    private Bootstrap bootstrap;
-    private EventLoopGroup group;
-    private static String remoteAddress = "127.0.0.1";
-    private static int port = 3000;
-
     public NettyClient() {
-        this (remoteAddress, port);
-    }
-
-    public NettyClient(String remoteAddress, int port) {
-        bootstrap = new Bootstrap ();
-        group = new NioEventLoopGroup ();
-        bootstrap.group (group)
-                .channel (NioSocketChannel.class)
-                .handler (new NettyClientChannelInitializer ());
-        ChannelFuture future = null;
-        try {
-            future = bootstrap.connect (remoteAddress, port).sync ();
-            RpcClientHandler handler = future.channel ().pipeline ().get (RpcClientHandler.class);
-            ConnectionManager.getInstance ().put (handler, 1);
-        } catch (InterruptedException e) {
-            throw new RuntimeException (e);
+        if (Objects.isNull (ConnectionManager.getInstance ())){
+            log.error("连接管理器初始化失败");
+            throw new RuntimeException("连接管理器初始化失败");
+        }else {
+            log.info("连接管理器初始化成功");
         }
     }
 
@@ -56,9 +41,5 @@ public class NettyClient {
         return (T) Proxy.newProxyInstance (clazz.getClassLoader (),
                 new Class[]{clazz},
                 new RemoteInvocationHandler (clazz));
-    }
-
-    public void stop() {
-        group.shutdownGracefully ();
     }
 }

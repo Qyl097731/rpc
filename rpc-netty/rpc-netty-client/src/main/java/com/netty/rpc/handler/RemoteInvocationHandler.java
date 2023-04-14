@@ -4,6 +4,8 @@ import com.netty.rpc.connect.ConnectionManager;
 import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.codec.RpcResponse;
 import com.rpc.netty.protocol.ServiceDescriptor;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -32,11 +34,11 @@ public class RemoteInvocationHandler implements InvocationHandler {
         return null;
     }
 
-    private RpcResponse invokeRemote(RpcRequest request) {
+    private RpcResponse invokeRemote(RpcRequest request) throws InterruptedException {
         ConnectionManager manager = ConnectionManager.getInstance ();
-        RpcClientHandler handler = manager.take ();
+        RpcClientHandler handler = manager.borrow ();
         RpcResponse response = handler.send (request);
-        manager.put (handler, 1);
+        manager.release (handler);
         return response;
     }
 }

@@ -1,12 +1,23 @@
 package com.netty.rpc.connect;
 
+import com.netty.rpc.NettyClientChannelInitializer;
 import com.netty.rpc.route.LoadBalance;
 import com.netty.rpc.handler.RpcClientHandler;
 import com.netty.rpc.route.impl.RandomLoadBalance;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.net.Inet4Address;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @description 连接池管理
@@ -15,31 +26,54 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 @Slf4j
 public class ConnectionManager {
-    private ConnectionManager(){}
-    private BlockingQueue<RpcClientHandler> connectionPool = new LinkedBlockingQueue<RpcClientHandler> (5);
+    private static final int DEFAULT_SIZE = 10;
+    private static final int MAX_SIZE = 20;
+    private static final String DEFAULT_HOST = "127.0.0.1";
+    private static final int DEFAULT_PORT = 3000;
+    private Bootstrap bootstrap;
+    private CopyOnWriteArrayList<RpcClientHandler> connectionPool;
+    private LoadBalance loadBalance;
 
-    private LoadBalance loadBalance = new RandomLoadBalance ();
-
-    private static class SingletonHolder{
+    private static class SingletonHolder {
         private static final ConnectionManager instance = new ConnectionManager ();
     }
 
-    public static ConnectionManager getInstance(){
+    private ConnectionManager() {
+        this (DEFAULT_SIZE);
+    }
+
+    private ConnectionManager(int size) {
+        bootstrap = new Bootstrap ();
+        bootstrap.group (new NioEventLoopGroup ())
+                .channel (NioSocketChannel.class)
+                .option (ChannelOption.TCP_NODELAY, true)
+                .option (ChannelOption.SO_KEEPALIVE, true)
+                .option (ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
+                .handler (new NettyClientChannelInitializer ());
+
+        int capacity = size > MAX_SIZE ? DEFAULT_SIZE : size;
+
+        connectionPool = new CopyOnWriteArrayList<>();
+        for (int i = 0; i < capacity; i++) {
+            try {
+                Channel channel = bootstrap.connect (DEFAULT_HOST, DEFAULT_PORT).sync ().channel ();
+                RpcClientHandler handler = channel.pipeline ().get (RpcClientHandler.class);
+                connectionPool.add (handler);
+            } catch (InterruptedException e) {
+                log.error ("fail to connect to server");
+                throw new RuntimeException (e);
+            }
+        }
+        loadBalance = new RandomLoadBalance ();
+    }
+    public static ConnectionManager getInstance() {
         return SingletonHolder.instance;
     }
 
-    public synchronized void put(RpcClientHandler handler, int poolSize){
-        try {
-            for (int i = 0; i < poolSize; i++) {
-                connectionPool.put(handler);
-            }
-        } catch (InterruptedException e) {
-            log.error("put error", e);
-            throw new RuntimeException (e);
-        }
+    public RpcClientHandler borrow(){
+        return loadBalance.choose (connectionPool);
     }
-
-    public synchronized RpcClientHandler take(){
-        return loadBalance.take (connectionPool);
+    public void release(RpcClientHandler handler){
+        connectionPool.add (handler);
     }
 }
