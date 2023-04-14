@@ -1,8 +1,9 @@
-package com.rpc.netty.serializer;
+package com.rpc.netty.serializer.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.rpc.netty.serializer.Serializer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
@@ -24,9 +25,9 @@ public class KryoSerializer extends Serializer {
      */
     @Override
     public <T> byte[] serialize(T obj) {
-        Kryo kryo = new Kryo ();
+        Kryo kryo = KryoPool.obtain ();
         byte[] bytes = null;
-        kryo.setRegistrationRequired(false);
+        kryo.setRegistrationRequired (false);
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream ();
              Output output = new Output (baos)) {
             kryo.writeObject (output, obj);
@@ -34,6 +35,8 @@ public class KryoSerializer extends Serializer {
         } catch (IOException e) {
             log.error ("序列化失败..." + e.getMessage ());
             throw new RuntimeException (e);
+        } finally {
+            KryoPool.release (kryo);
         }
         return bytes;
     }
@@ -47,8 +50,8 @@ public class KryoSerializer extends Serializer {
      */
     @Override
     public <T> T deserialize(byte[] bytes, Class<T> clazz) {
-        Kryo kryo = new Kryo ();
-        kryo.setRegistrationRequired(false);
+        Kryo kryo = KryoPool.obtain ();
+        kryo.setRegistrationRequired (false);
         T obj = null;
         try (ByteArrayInputStream bis = new ByteArrayInputStream (bytes);
              Input input = new Input (bis)) {
@@ -56,6 +59,8 @@ public class KryoSerializer extends Serializer {
         } catch (IOException e) {
             log.error ("反序列化失败..." + e.getMessage ());
             throw new RuntimeException (e);
+        } finally {
+            KryoPool.release (kryo);
         }
         return obj;
     }
