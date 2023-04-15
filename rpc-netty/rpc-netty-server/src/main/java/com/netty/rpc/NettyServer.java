@@ -11,8 +11,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Objects;
+
 /**
- * @description
  * @date 2023/4/11 1:38
  * @author: qyl
  */
@@ -28,7 +29,12 @@ public class NettyServer implements LifeCycle {
     private static final int port = 3000;
 
     public NettyServer() {
-        ServiceManager.init ();
+        if (Objects.isNull (ServiceManager.getInstance ())){
+            log.error("注册中心初始化失败");
+            throw new RuntimeException("注册中心初始化失败");
+        }else {
+            log.info("注册中心初始化成功");
+        }
     }
 
     @Override

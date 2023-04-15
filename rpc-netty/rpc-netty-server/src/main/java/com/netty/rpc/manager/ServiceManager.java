@@ -15,18 +15,19 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 public class ServiceManager {
+    private static ConcurrentHashMap<ServiceDescriptor, ServiceInstance> services;
+
     private ServiceManager() {
+        services = new ConcurrentHashMap<> ();
     }
 
     private static class ServiceHolder {
-        private static final ConcurrentHashMap<ServiceDescriptor, ServiceInstance> singletonInstance =
-                new ConcurrentHashMap<> ();
+        private static final ServiceManager instance = new ServiceManager();
     }
 
-    private static ConcurrentHashMap<ServiceDescriptor, ServiceInstance> services;
 
-    public static void init() {
-        services = ServiceHolder.singletonInstance;
+    public static ServiceManager getInstance() {
+        return ServiceHolder.instance;
     }
 
     public static <T> void register(Class<T> clazz, T instance) {
