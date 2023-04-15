@@ -1,5 +1,7 @@
 package com.netty.rpc;
 
+import com.netty.rpc.service.UserService;
+
 /**
  * @description 客户端
  * @date 2023/4/11 22:50

@@ -1,4 +1,4 @@
-package com.netty.rpc;
+package com.netty.rpc.service;
 
 import java.util.List;
 

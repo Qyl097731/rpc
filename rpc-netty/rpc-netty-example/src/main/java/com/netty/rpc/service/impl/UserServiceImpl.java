@@ -1,4 +1,7 @@
-package com.netty.rpc;
+package com.netty.rpc.service.impl;
+
+import com.netty.rpc.service.UserService;
+import com.rpc.netty.annotation.RpcService;
 
 import java.util.Arrays;
 import java.util.List;
@@ -8,7 +11,8 @@ import java.util.List;
  * @date 2023/4/11 22:49
  * @author: qyl
  */
-public class UserServiceImpl implements UserService{
+@RpcService
+public class UserServiceImpl implements UserService {
     @Override
     public void sayHello() {
         System.out.println ("hello");

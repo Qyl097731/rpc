@@ -1,11 +1,15 @@
 package com.netty.rpc.manager;
 
+import com.rpc.netty.annotation.RpcService;
 import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.protocol.ServiceDescriptor;
+import com.rpc.netty.utils.AnnotationUtils;
 import com.rpc.netty.utils.ReflectionUtils;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -22,16 +26,22 @@ public class ServiceManager {
     }
 
     private static class ServiceHolder {
-        private static final ServiceManager instance = new ServiceManager();
+        private static final ServiceManager instance = new ServiceManager ();
     }
-
 
     public static ServiceManager getInstance() {
         return ServiceHolder.instance;
     }
 
-    public static <T> void register(Class<T> clazz, T instance) {
-        Method[] methods = ReflectionUtils.getPublicMethods (clazz);
+    public void registerServices(String[] basePackages) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+        List<Class<?>> classes = AnnotationUtils.getServicesClasses (basePackages);
+        for (Class<?> clazz : classes) {
+            register (clazz.getInterfaces ()[0], clazz.newInstance (), clazz.isAnnotationPresent (RpcService.class));
+        }
+    }
+
+    public static <T, P> void register(Class<T> clazz, P instance, boolean isAll) {
+        Method[] methods = AnnotationUtils.getExplodedMethods (clazz, isAll);
         for (Method method : methods) {
             ServiceDescriptor descriptor = ServiceDescriptor.of (clazz, method);
             ServiceInstance service = new ServiceInstance (instance, method);
@@ -42,12 +52,13 @@ public class ServiceManager {
 
     /**
      * 根据请求 进行服务查找
+     *
      * @param request
-     * @return
      * @param <T>
+     * @return
      */
     public static <T> T lookup(RpcRequest request) {
         ServiceDescriptor desc = request.getServiceDescriptor ();
-        return (T)services.getOrDefault(desc, null);
+        return (T) services.getOrDefault (desc, null);
     }
 }

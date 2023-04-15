@@ -2,7 +2,10 @@ package com.netty.rpc;
 
 import ch.qos.logback.core.spi.LifeCycle;
 import com.netty.rpc.manager.ServiceManager;
+import com.rpc.netty.annotation.RpcService;
 import com.rpc.netty.codec.RpcRequest;
+import com.rpc.netty.utils.AnnotationUtils;
+import com.rpc.netty.utils.ReflectionUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -11,6 +14,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -27,14 +33,19 @@ public class NettyServer implements LifeCycle {
 
     private static final String host = "127.0.0.1";
     private static final int port = 3000;
+    private static final String[] BASE_PACKAGES = new String[] {"com.netty.rpc.service"};
+    private final ServiceManager manager;
 
-    public NettyServer() {
-        if (Objects.isNull (ServiceManager.getInstance ())){
+    public NettyServer() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+        manager = ServiceManager.getInstance ();
+        if (Objects.isNull (manager)){
             log.error("注册中心初始化失败");
             throw new RuntimeException("注册中心初始化失败");
         }else {
             log.info("注册中心初始化成功");
         }
+        manager.registerServices (BASE_PACKAGES);
+        start ();
     }
 
     @Override
@@ -67,9 +78,5 @@ public class NettyServer implements LifeCycle {
     @Override
     public boolean isStarted() {
         return false;
-    }
-
-    public <T> void register(Class<T> clazz, T instance) {
-        ServiceManager.register (clazz, instance);
     }
 }
