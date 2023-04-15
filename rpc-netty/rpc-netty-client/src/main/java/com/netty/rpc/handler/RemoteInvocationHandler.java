@@ -4,8 +4,6 @@ import com.netty.rpc.connect.ConnectionManager;
 import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.codec.RpcResponse;
 import com.rpc.netty.protocol.ServiceDescriptor;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -17,15 +15,17 @@ import java.lang.reflect.Method;
  */
 public class RemoteInvocationHandler implements InvocationHandler {
     private Class target;
+    private String version;
 
-    public <T> RemoteInvocationHandler(Class<T> clazz) {
+    public <T> RemoteInvocationHandler(Class<T> clazz, String version) {
         this.target = clazz;
+        this.version = version;
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         RpcRequest request = new RpcRequest ();
-        request.setServiceDescriptor (ServiceDescriptor.of (target, method));
+        request.setServiceDescriptor (ServiceDescriptor.of (target, method,version));
         request.setParameters (args);
         RpcResponse response = invokeRemote (request);
         if (response != null) {

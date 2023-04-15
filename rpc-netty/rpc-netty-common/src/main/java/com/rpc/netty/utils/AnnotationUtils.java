@@ -43,7 +43,7 @@ public class AnnotationUtils {
                                 String className = packageName + "." + fileName.substring (0, fileName.lastIndexOf ("."));
                                 Class<?> clazz = Class.forName (className);
                                 if (clazz.isAnnotationPresent (RpcService.class)
-                                        || getExplodedMethods (clazz,false).length > 0){
+                                        || getExplodedMethods (clazz).length > 0){
                                     classes.add (clazz);
                                 }
                             }else {
@@ -59,26 +59,13 @@ public class AnnotationUtils {
 
     /**
      * 获取所有Rpc provider暴露的方法
-     *
+     * @param clazz
+     * @return 所有Rpc provider暴露的方法
      * @param <T>
-     * @return public 方法
      */
     public static <T> Method[] getExplodedMethods(Class<T> clazz) {
-        return getExplodedMethods (clazz, true);
-    }
-
-    /**
-     * /**
-     * 获取所有Rpc provider暴露的方法
-     *
-     * @param clazz
-     * @param isAll 是不是所有方法
-     * @param <T>
-     * @return
-     */
-    public static <T> Method[] getExplodedMethods(Class<T> clazz, boolean isAll) {
         Method[] methods = clazz.getMethods ();
-        if (isAll) {
+        if (clazz.isAnnotationPresent(RpcService.class)) {
             return methods;
         } else {
             if (methods.length > 0) {

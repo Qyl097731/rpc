@@ -1,5 +1,6 @@
 package com.netty.rpc;
 
+import com.netty.rpc.service.AnnotationService;
 import com.netty.rpc.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
@@ -20,6 +21,7 @@ import static org.hamcrest.Matchers.closeTo;
 public class NettyServerTest {
     private static NettyClient client;
     private static NettyServer server;
+
     @BeforeAll
     static void setUp() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         server = new NettyServer ();
@@ -35,7 +37,7 @@ public class NettyServerTest {
     @Test
     void testResponseTimeWithoutResponse() {
         long start = System.currentTimeMillis ();
-        UserService service = client.getProxy (UserService.class);
+        UserService service = client.getProxy (UserService.class, "");
         service.sayHello ();
         long end = System.currentTimeMillis ();
         double cost = end - start;
@@ -46,7 +48,7 @@ public class NettyServerTest {
     @Test
     void testResponseTimeWithResponse() {
         long start = System.currentTimeMillis ();
-        UserService service = client.getProxy (UserService.class);
+        UserService service = client.getProxy (UserService.class, "");
         List<Integer> response = service.selectAll ();
         long end = System.currentTimeMillis ();
         double cost = end - start;
@@ -68,26 +70,26 @@ public class NettyServerTest {
         Thread[] threads = new Thread[threadNum];
         long start = System.currentTimeMillis ();
         for (int i = 0; i < threadNum; ++i) {
-            threads[i] = new Thread(new Runnable() {
+            threads[i] = new Thread (new Runnable () {
                 @Override
                 public void run() {
                     for (int i = 0; i < requestNum; i++) {
                         try {
-                            final UserService service = client.getProxy (UserService.class);
+                            final UserService service = client.getProxy (UserService.class, "");
                             service.sayHello ();
                         } catch (Exception ex) {
-                            System.out.println(ex.toString());
+                            System.out.println (ex.toString ());
                         }
                     }
                 }
             });
-            threads[i].start();
+            threads[i].start ();
         }
         for (int i = 0; i < threads.length; i++) {
             try {
-                threads[i].join();
+                threads[i].join ();
             } catch (InterruptedException e) {
-                log.error (e.getMessage());
+                log.error (e.getMessage ());
             }
         }
         long end = System.currentTimeMillis ();
@@ -109,32 +111,44 @@ public class NettyServerTest {
         Thread[] threads = new Thread[threadNum];
         long start = System.currentTimeMillis ();
         for (int i = 0; i < threadNum; ++i) {
-            threads[i] = new Thread(new Runnable() {
+            threads[i] = new Thread (new Runnable () {
                 @Override
                 public void run() {
                     for (int i = 0; i < requestNum; i++) {
                         try {
-                            final UserService service = client.getProxy (UserService.class);
+                            final UserService service = client.getProxy (UserService.class, "");
                             service.sayHello ();
                         } catch (Exception ex) {
-                            System.out.println(ex.toString());
+                            System.out.println (ex.toString ());
                         }
                     }
                 }
             });
-            threads[i].start();
+            threads[i].start ();
         }
         for (int i = 0; i < threads.length; i++) {
             try {
-                threads[i].join();
+                threads[i].join ();
             } catch (InterruptedException e) {
-                log.error (e.getMessage());
+                log.error (e.getMessage ());
             }
         }
         long end = System.currentTimeMillis ();
         double cost = end - start;
-//        assertThat ("Response time", cost, closeTo (100000.0, 1000.0)); // 判断响应时间是否在预期范围内
+        assertThat ("Response time", cost, closeTo (1000.0, 1000.0)); // 判断响应时间是否在预期范围内
         log.info ("Sync call total-time-cost:{}ms, req/s={}", cost, threadNum * requestNum / cost * 1000);
+    }
+
+    /**
+     * 测试是否调用了正确的version
+     */
+    @Test
+    void testCallCorrectServiceVersion() {
+        AnnotationService serviceVersion2 = client.getProxy (AnnotationService.class, "2.0");
+        Assertions.assertEquals (2, serviceVersion2.getVersion ());
+
+        AnnotationService serviceVersion1 = client.getProxy (AnnotationService.class, "1.0");
+        Assertions.assertEquals (1, serviceVersion1.getVersion ());
     }
 
     @Test

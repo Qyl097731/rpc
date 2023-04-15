@@ -8,7 +8,7 @@ import com.rpc.netty.annotation.RpcService;
  * @date 2023/4/15 17:44
  * @author: qyl
  */
-//@RpcService(version = "2.0")
+@RpcService(version = "2.0")
 public class AnnotationServiceImpl2 implements AnnotationService {
     @Override
     public Integer getVersion() {

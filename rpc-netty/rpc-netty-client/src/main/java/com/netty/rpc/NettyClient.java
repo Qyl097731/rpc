@@ -33,9 +33,9 @@ public class NettyClient {
         }
     }
 
-    public <T> T getProxy(Class<T> clazz) {
+    public <T> T getProxy(Class<T> clazz,String version) {
         return (T) Proxy.newProxyInstance (clazz.getClassLoader (),
                 new Class[]{clazz},
-                new RemoteInvocationHandler (clazz));
+                new RemoteInvocationHandler (clazz,version));
     }
 }
