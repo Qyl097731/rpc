@@ -10,6 +10,10 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+
 /**
  * @description 服务处理器 将客户端的request进行解码 编码传递
  * @date 2023/4/11 13:30
@@ -17,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
-
     /**
      * Is called for each message of type {@link RpcRequest}.
      *
@@ -28,6 +31,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
      */
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcRequest msg) throws Exception {
+        log.info("收到客户端的请求 ..." + msg.toString());
         ServiceInstance service = ServiceManager.lookup (msg);
         RpcResponse response = new RpcResponse ();
         try {
