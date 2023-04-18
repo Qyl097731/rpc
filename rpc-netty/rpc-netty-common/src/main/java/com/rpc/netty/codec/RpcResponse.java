@@ -11,7 +11,7 @@ import lombok.Data;
 public class RpcResponse {
     private String serviceId;
     private Integer code;
-    private Object value;
+    private Object result;
     private String msg;
 
     public boolean isSuccess() {

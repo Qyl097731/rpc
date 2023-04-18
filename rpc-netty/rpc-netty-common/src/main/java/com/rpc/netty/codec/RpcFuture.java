@@ -47,7 +47,7 @@ public class RpcFuture implements Future<Object> {
         boolean success = sync.tryAcquireNanos (1, timeout);
         RpcResponse r = response;
         if (success) {
-            return r == null ? null : r.getValue ();
+            return r == null ? null : r.getResult ();
         } else {
             throw new TimeoutException (String.format ("request {} fail to get response in time ",
                     request.getServiceId (),
@@ -62,7 +62,7 @@ public class RpcFuture implements Future<Object> {
             sync.acquire (1);
         }
         RpcResponse r;
-        return ((r = response) == null) ? null : r.getValue ();
+        return ((r = response) == null) ? null : r.getResult ();
     }
 
     public void done(RpcResponse response) {
@@ -71,5 +71,22 @@ public class RpcFuture implements Future<Object> {
     }
 
     private class Sync extends AbstractQueuedSynchronizer {
+        private static final long serialVersionUID = 1L;
+        private final int done = 0;
+        private final int running = 1;
+
+        @Override
+        protected boolean tryAcquire(int ignored) {
+            return getState () == done;
+        }
+
+        @Override
+        protected boolean tryRelease(int ignored) {
+            if (getState () == running){
+                return compareAndSetState (running,done);
+            }else{
+                return false;
+            }
+        }
     }
 }
