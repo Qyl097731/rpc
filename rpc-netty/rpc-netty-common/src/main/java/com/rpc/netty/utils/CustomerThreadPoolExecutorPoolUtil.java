@@ -1,4 +1,4 @@
-package com.netty.rpc.utils;
+package com.rpc.netty.utils;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
