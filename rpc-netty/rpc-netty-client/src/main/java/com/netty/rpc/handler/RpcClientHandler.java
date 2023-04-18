@@ -56,6 +56,7 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
             channel.writeAndFlush (request).sync ();
             future = new RpcFuture ();
             future.setRequest (request);
+            futureMap.put(request.getServiceId (), future);
         } catch (InterruptedException e) {
             throw new RuntimeException (e);
         } finally {

@@ -37,6 +37,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
         try {
             Object r = ServiceInvoker.invoke (service, msg);
             response.setResult (r);
+            response.setServiceId (msg.getServiceId ());
             response.setCode (HttpResponseStatus.OK.code ());
         }catch (Exception e) {
             response.setResult(e);

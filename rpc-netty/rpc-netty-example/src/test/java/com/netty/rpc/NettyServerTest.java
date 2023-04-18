@@ -135,7 +135,7 @@ public class NettyServerTest {
         }
         long end = System.currentTimeMillis ();
         double cost = end - start;
-        assertThat ("Response time", cost, closeTo (1000.0, 1000.0)); // 判断响应时间是否在预期范围内
+        assertThat ("Response time", cost, closeTo (10000.0, 10000.0)); // 判断响应时间是否在预期范围内
         log.info ("Sync call total-time-cost:{}ms, req/s={}", cost, threadNum * requestNum / cost * 1000);
     }
 

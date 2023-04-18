@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -30,11 +31,12 @@ public class RemoteInvocationHandler implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) {
         try {
             RpcRequest request = new RpcRequest ();
+            request.setServiceId (UUID.randomUUID().toString().replaceAll ("-",""));
             request.setServiceDescriptor (ServiceDescriptor.of (target, method,version));
             request.setParameters (args);
             return invokeRemote (request);
         }catch (Exception e) {
-            log.error("调用远程{}#{}失败...{}", proxy,method.getName(),e);
+            log.error("调用远程{}#{}失败...{}", target,method.getName(),e);
         }
         return null;
     }
