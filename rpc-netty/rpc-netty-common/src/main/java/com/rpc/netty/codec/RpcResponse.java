@@ -9,8 +9,9 @@ import lombok.Data;
  */
 @Data
 public class RpcResponse {
+    private String serviceId;
     private Integer code;
-    private Object result;
+    private Object value;
     private String msg;
 
     public boolean isSuccess() {

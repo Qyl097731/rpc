@@ -1,6 +1,5 @@
 package com.rpc.netty.codec;
 
-import com.rpc.netty.protocol.RpcPeer;
 import com.rpc.netty.protocol.ServiceDescriptor;
 import lombok.Data;
 
@@ -11,6 +10,7 @@ import lombok.Data;
  */
 @Data
 public class RpcRequest {
+    private String serviceId;
     private ServiceDescriptor serviceDescriptor;
     private Object[] parameters;
 }
