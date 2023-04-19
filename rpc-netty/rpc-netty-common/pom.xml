@@ -18,6 +18,8 @@
         <kryo.version>5.4.0</kryo.version>
         <netty-all.version>4.1.77.Final</netty-all.version>
         <protobuf.version>3.21.9</protobuf.version>
+        <objenesis.version>3.2</objenesis.version>
+        <protostuff.version>1.2.2</protostuff.version>
     </properties>
 
     <dependencies>
@@ -37,6 +39,23 @@
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
             <version>${protobuf.version}</version>
+        </dependency>
+        <!-- Objenesis -->
+        <dependency>
+            <groupId>org.objenesis</groupId>
+            <artifactId>objenesis</artifactId>
+            <version>${objenesis.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.dyuproject.protostuff</groupId>
+            <artifactId>protostuff-core</artifactId>
+            <version>${protostuff.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.dyuproject.protostuff</groupId>
+            <artifactId>protostuff-runtime</artifactId>
+            <version>${protostuff.version}</version>
         </dependency>
     </dependencies>
 </project>
