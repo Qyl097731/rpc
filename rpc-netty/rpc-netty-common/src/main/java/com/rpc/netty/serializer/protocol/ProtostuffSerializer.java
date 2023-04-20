@@ -34,7 +34,7 @@ public class ProtostuffSerializer<T> extends Serializer {
             return ProtobufIOUtil.toByteArray(obj, schema, buffer);
         } catch (Exception e) {
             log.error("protostuff 序列化 {} 失败", obj, e);
-            throw new RuntimeException("protostuff 序列化 {} 失败)");
+            throw new RuntimeException("protostuff 序列化失败");
         }finally {
             buffer.clear();
         }
@@ -49,7 +49,7 @@ public class ProtostuffSerializer<T> extends Serializer {
             return message;
         }catch (Exception e) {
             log.error("protostuff 反序列化 {} 失败", clazz, e);
-            throw new RuntimeException("protostuff 反序列化 {} 失败)");
+            throw new RuntimeException("protostuff 反序列化失败",e);
         }
     }
 
