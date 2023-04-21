@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author nsec
  */
 @Slf4j
-public class ProtostuffSerializer<T> extends Serializer {
+public class ProtostuffSerializer extends Serializer {
     private Map<Class<?>, Schema<?>> cacheSchema = new ConcurrentHashMap<>();
     private Objenesis objenesis = new ObjenesisStd(true);
 
@@ -33,7 +33,6 @@ public class ProtostuffSerializer<T> extends Serializer {
             Schema<T> schema = getSchema(clazz);
             return ProtobufIOUtil.toByteArray(obj, schema, buffer);
         } catch (Exception e) {
-            log.error("protostuff 序列化 {} 失败", obj, e);
             throw new RuntimeException("protostuff 序列化失败");
         }finally {
             buffer.clear();
@@ -48,18 +47,12 @@ public class ProtostuffSerializer<T> extends Serializer {
             ProtostuffIOUtil.mergeFrom(input, message, schema);
             return message;
         }catch (Exception e) {
-            log.error("protostuff 反序列化 {} 失败", clazz, e);
             throw new RuntimeException("protostuff 反序列化失败",e);
         }
     }
 
     @SuppressWarnings("unchecked")
     private <T> Schema<T> getSchema(Class<T> clazz) {
-        Schema<T> schema = (Schema<T>) cacheSchema.get(clazz);
-        if (schema == null) {
-            schema = RuntimeSchema.createFrom(clazz);
-            cacheSchema.put(clazz, schema);
-        }
-        return schema;
+        return (Schema<T>)cacheSchema.computeIfAbsent(clazz, RuntimeSchema::createFrom);
     }
 }

@@ -1,5 +1,6 @@
 package com.netty.rpc.config;
 
+import com.rpc.netty.serializer.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -12,7 +13,6 @@ import lombok.Data;
  */
 @Data
 public class NettyServerConfig {
-    private Class<? extends ByteToMessageDecoder> encoderClass;
-    private Class<? extends MessageToByteEncoder<ByteBuf>> decoderClass;
+    public Class<? extends Serializer> serializerClass;
     private int port = 3000;
 }

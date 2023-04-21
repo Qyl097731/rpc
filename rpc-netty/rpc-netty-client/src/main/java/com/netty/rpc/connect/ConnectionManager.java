@@ -1,9 +1,11 @@
 package com.netty.rpc.connect;
 
 import com.netty.rpc.NettyClientChannelInitializer;
+import com.netty.rpc.config.NettyClientConfig;
 import com.netty.rpc.route.LoadBalance;
 import com.netty.rpc.handler.RpcClientHandler;
 import com.netty.rpc.route.impl.RandomLoadBalance;
+import com.rpc.netty.serializer.Serializers;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -44,12 +46,14 @@ public class ConnectionManager {
 
     private ConnectionManager(int size) {
         bootstrap = new Bootstrap ();
+        NettyClientConfig config = new NettyClientConfig ();
+        config.setSerializerClass (Serializers.PROTOSTUFF);
         bootstrap.group (new NioEventLoopGroup ())
                 .channel (NioSocketChannel.class)
                 .option (ChannelOption.TCP_NODELAY, true)
                 .option (ChannelOption.SO_KEEPALIVE, true)
                 .option (ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
-                .handler (new NettyClientChannelInitializer ());
+                .handler (new NettyClientChannelInitializer (config));
 
         int capacity = size > MAX_SIZE ? DEFAULT_SIZE : size;
 

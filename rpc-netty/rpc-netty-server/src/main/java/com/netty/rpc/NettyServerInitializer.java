@@ -1,10 +1,13 @@
 package com.netty.rpc;
 
+import com.netty.rpc.config.NettyServerConfig;
 import com.netty.rpc.handler.NettyServerHandler;
 import com.rpc.netty.codec.RpcDecoder;
 import com.rpc.netty.codec.RpcEncoder;
 import com.rpc.netty.codec.RpcRequest;
+import com.rpc.netty.serializer.Serializer;
 import com.rpc.netty.serializer.kryo.KryoSerializer;
+import com.rpc.netty.utils.ReflectionUtils;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
@@ -18,7 +21,11 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class NettyServerInitializer extends ChannelInitializer<Channel> {
+    private final Serializer serializer;
 
+    public NettyServerInitializer(NettyServerConfig config) {
+        serializer = ReflectionUtils.create (config.getSerializerClass ());
+    }
     /**
      * This method will be called once the {@link Channel} was registered. After the method returns this instance
      * will be removed from the {@link ChannelPipeline} of the {@link Channel}.
@@ -31,8 +38,8 @@ public class NettyServerInitializer extends ChannelInitializer<Channel> {
     @Override
     protected void initChannel(Channel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline ();
-        pipeline.addLast (new RpcEncoder (new KryoSerializer (), RpcRequest.class));
-        pipeline.addLast (new RpcDecoder (new KryoSerializer (), RpcRequest.class));
+        pipeline.addLast (new RpcEncoder (serializer, RpcRequest.class));
+        pipeline.addLast (new RpcDecoder (serializer, RpcRequest.class));
         pipeline.addLast (new NettyServerHandler ());
     }
 

@@ -10,6 +10,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,23 +21,23 @@ class ProtostuffSerializerTest {
     private static Serializer serializer;
 
     @BeforeAll
-    static void setUp() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        serializer = new ProtostuffSerializer<User>();
+    static void setUp() {
     }
 
     @AfterAll
     static void tearDown() {
-        serializer = null;
+
     }
     @Test
-    void serialize() {
+    void serializeForObjectUseProtoStuff() {
+        serializer = new ProtostuffSerializer();
         User user = new User(10, "test");
         byte[] bytes = serializer.serialize(user);
         assertNotNull(bytes);
     }
-
     @Test
-    void deserialize() {
+    void deserializeForObjectUseProtoStuff() {
+        serializer = new ProtostuffSerializer();
         User user = new User(10, "test");
         byte[] bytes = serializer.serialize(user);
         User deUser = serializer.deserialize(bytes,User.class);

@@ -1,9 +1,11 @@
 package com.netty.rpc;
 
 import ch.qos.logback.core.spi.LifeCycle;
+import com.netty.rpc.config.NettyServerConfig;
 import com.netty.rpc.manager.ServiceManager;
 import com.rpc.netty.annotation.RpcService;
 import com.rpc.netty.codec.RpcRequest;
+import com.rpc.netty.serializer.Serializers;
 import com.rpc.netty.utils.AnnotationUtils;
 import com.rpc.netty.utils.ReflectionUtils;
 import io.netty.bootstrap.ServerBootstrap;
@@ -52,9 +54,12 @@ public class NettyServer implements LifeCycle {
     public void start() {
         try {
             server = new ServerBootstrap ();
+            // TODO 从配置文件 或者 注解读取
+            NettyServerConfig config = new NettyServerConfig ();
+            config.setSerializerClass (Serializers.PROTOSTUFF);
             server.group (bossGroup, workerGroup)
                     .channel (NioServerSocketChannel.class)
-                    .childHandler (new NettyServerInitializer ());
+                    .childHandler (new NettyServerInitializer (config));
             ChannelFuture future = server.bind (host,port).sync ();
             channel = future.channel ();
         } catch (InterruptedException e) {
