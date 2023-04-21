@@ -1,10 +1,12 @@
 package com.netty.rpc.handler;
 
 import com.netty.rpc.connect.ConnectionManager;
+import com.rpc.netty.annotation.RpcService;
 import com.rpc.netty.codec.RpcFuture;
 import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.codec.RpcResponse;
 import com.rpc.netty.protocol.ServiceDescriptor;
+import com.rpc.netty.utils.ReflectionUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationHandler;
@@ -19,8 +21,8 @@ import java.util.concurrent.ExecutionException;
  */
 @Slf4j
 public class RemoteInvocationHandler implements InvocationHandler {
-    private Class target;
-    private String version;
+    private final Class target;
+    private final String version;
 
     public <T> RemoteInvocationHandler(Class<T> clazz, String version) {
         this.target = clazz;
@@ -30,15 +32,31 @@ public class RemoteInvocationHandler implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) {
         try {
-            RpcRequest request = new RpcRequest ();
-            request.setServiceId (UUID.randomUUID().toString().replaceAll ("-",""));
-            request.setServiceDescriptor (ServiceDescriptor.of (target, method,version));
-            request.setParameters (args);
-            return invokeRemote (request);
+            if (isCallRemote(method)){
+                RpcRequest request = new RpcRequest ();
+                request.setServiceId (UUID.randomUUID().toString().replaceAll ("-",""));
+                request.setServiceDescriptor (ServiceDescriptor.of (target, method,version));
+                request.setParameters (args);
+                return invokeRemote (request);
+            }else {
+                return invokeLocal (proxy,method,args);
+            }
         }catch (Exception e) {
             log.error("调用远程{}#{}失败...{}", target,method.getName(),e);
         }
         return null;
+    }
+
+    private boolean isCallRemote(Method method) {
+        return !method.getDeclaringClass ().equals(Object.class );
+    }
+
+    private Object invokeLocal(Object proxy, Method method, Object[] args) {
+        if (method.getDeclaringClass ().equals (Object.class)){
+            return ReflectionUtils.invoke (ReflectionUtils.create (Object.class), method);
+        }else {
+            return null;
+        }
     }
 
     private Object invokeRemote(RpcRequest request) throws ExecutionException, InterruptedException {

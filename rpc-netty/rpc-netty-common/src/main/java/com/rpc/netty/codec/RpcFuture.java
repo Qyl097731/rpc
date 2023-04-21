@@ -72,8 +72,8 @@ public class RpcFuture implements Future<Object> {
 
     private class Sync extends AbstractQueuedSynchronizer {
         private static final long serialVersionUID = 1L;
-        private final int done = 0;
-        private final int running = 1;
+        private final int running = 0;
+        private final int done = 1;
 
         @Override
         protected boolean tryAcquire(int ignored) {
