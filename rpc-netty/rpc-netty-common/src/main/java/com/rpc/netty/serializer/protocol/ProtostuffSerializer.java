@@ -24,14 +24,13 @@ public class ProtostuffSerializer extends Serializer {
     private Map<Class<?>, Schema<?>> cacheSchema = new ConcurrentHashMap<>();
     private Objenesis objenesis = new ObjenesisStd(true);
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> byte[] serialize(T obj) {
         Class<T> clazz = (Class<T>) obj.getClass();
         LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
         try {
             Schema<T> schema = getSchema(clazz);
-            return ProtobufIOUtil.toByteArray(obj, schema, buffer);
+            return ProtostuffIOUtil.toByteArray(obj, schema, buffer);
         } catch (Exception e) {
             throw new RuntimeException("protostuff 序列化失败");
         }finally {
@@ -42,7 +41,7 @@ public class ProtostuffSerializer extends Serializer {
     @Override
     public <T> T deserialize(byte[] input, Class<T> clazz) {
         Schema<T> schema = getSchema(clazz);
-        T message = objenesis.newInstance(clazz);
+        T message = (T)objenesis.newInstance(clazz);
         try {
             ProtostuffIOUtil.mergeFrom(input, message, schema);
             return message;

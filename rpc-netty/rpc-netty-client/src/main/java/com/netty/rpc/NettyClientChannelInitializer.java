@@ -22,9 +22,9 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class NettyClientChannelInitializer extends ChannelInitializer<Channel> {
-    private final Serializer serializer ;
+    private final NettyClientConfig config;
     public NettyClientChannelInitializer(NettyClientConfig config) {
-        serializer = ReflectionUtils.create (config.getSerializerClass ());
+        this.config = config;
     }
 
     /**
@@ -39,8 +39,8 @@ public class NettyClientChannelInitializer extends ChannelInitializer<Channel> {
     @Override
     protected void initChannel(Channel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline ();
-        pipeline.addLast (new RpcEncoder (serializer, RpcRequest.class));
-        pipeline.addLast (new RpcDecoder (serializer, RpcResponse.class));
+        pipeline.addLast (new RpcEncoder (ReflectionUtils.create (config.getSerializerClass ()),RpcRequest.class));
+        pipeline.addLast (new RpcDecoder (ReflectionUtils.create (config.getSerializerClass ()),RpcResponse.class));
         pipeline.addLast(new RpcClientHandler());
     }
 
