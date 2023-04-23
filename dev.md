@@ -163,18 +163,24 @@ server启动之后，对client开启Debug模式，会导致Kryo反序列化存�
 
 ### 简述
 
-服务记录表种，由于大量的并发导致最后生成的主键冲突；当有服务返回之后，在服务记录表
-删除自己的服务id之后，导致具有相同的主键其他服务返回之后无法唤醒客户端，最后宕机，
+大量线程阻塞，最后宕机。
 
 ### 问题解决
 
-暂时加上服务计数
+将代码顺序如下进行修改，之前的代码先发送后进行记录future：那么如果我阻塞发送之后，后续请求返回了
+我还没记录futureMap，那么是不是最后很多线程都会一直阻塞了，因为future一直是null，也就
+无法调用future.done，也无法释放client了
 ```java
-    private ConcurrentHashMultiset<String> multiset = ConcurrentHashMultiset.create ();
+RpcFuture future = new RpcFuture ();
+future.setRequest (request);
+futureMap.put (request.getServiceId (), future);
+try {
+    channel.writeAndFlush (request).sync ();
+} catch (InterruptedException e) {
+    throw new RuntimeException (e);
+}
 ```
-
-> TODO ：主键策略生成用冲突更小的算法 
 
 ### 时间线
 
-2023/4/22 - 2023/4/22
+2023/4/22 - 2023/4/23
