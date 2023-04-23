@@ -1,5 +1,6 @@
 package com.netty.rpc.handler;
 
+import com.google.common.collect.ConcurrentHashMultiset;
 import com.netty.rpc.connect.ConnectionManager;
 import com.rpc.netty.codec.RpcFuture;
 import com.rpc.netty.codec.RpcRequest;
@@ -13,9 +14,6 @@ import io.netty.util.concurrent.Future;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -30,7 +28,6 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
     private Channel channel;
     final Lock lock = new ReentrantLock ();
     private ConcurrentHashMap<String, RpcFuture> futureMap = new ConcurrentHashMap<> ();
-
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcResponse response) throws Exception {
         log.info ("收到服务端响应:{}", response);
@@ -49,20 +46,20 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
         this.channel = ctx.channel ();
     }
 
+    /**
+     * 发送请求进行远程调用，注意这里必须先进性添加后进行发送，否则后续很容易还没记录，请求已经返回，导致死锁
+     * @param request
+     * @return
+     */
     public RpcFuture send(RpcRequest request) {
-        RpcFuture future;
-        lock.lock ();
+        RpcFuture future = new RpcFuture ();
+        future.setRequest (request);
+        futureMap.put (request.getServiceId (), future);
         try {
             channel.writeAndFlush (request).sync ();
-            future = new RpcFuture ();
-            future.setRequest (request);
-            futureMap.put(request.getServiceId (), future);
         } catch (InterruptedException e) {
             throw new RuntimeException (e);
-        } finally {
-            lock.unlock ();
         }
         return future;
-
     }
 }

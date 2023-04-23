@@ -56,7 +56,7 @@ public class NettyServer implements LifeCycle {
             server = new ServerBootstrap ();
             // TODO 从配置文件 或者 注解读取
             NettyServerConfig config = new NettyServerConfig ();
-            config.setSerializerClass (Serializers.PROTOSTUFF);
+            config.setSerializerClass (Serializers.KRYO);
             server.group (bossGroup, workerGroup)
                     .channel (NioServerSocketChannel.class)
                     .childHandler (new NettyServerInitializer (config));

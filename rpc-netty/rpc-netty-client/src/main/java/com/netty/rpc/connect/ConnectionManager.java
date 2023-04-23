@@ -47,7 +47,7 @@ public class ConnectionManager {
     private ConnectionManager(int size) {
         bootstrap = new Bootstrap ();
         NettyClientConfig config = new NettyClientConfig ();
-        config.setSerializerClass (Serializers.PROTOSTUFF);
+        config.setSerializerClass (Serializers.KRYO);
         bootstrap.group (new NioEventLoopGroup ())
                 .channel (NioSocketChannel.class)
                 .option (ChannelOption.TCP_NODELAY, true)

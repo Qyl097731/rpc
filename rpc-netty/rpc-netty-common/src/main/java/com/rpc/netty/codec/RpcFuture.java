@@ -49,9 +49,8 @@ public class RpcFuture implements Future<Object> {
         if (success) {
             return r == null ? null : r.getResult ();
         } else {
-            throw new TimeoutException (String.format ("request {} fail to get response in time ",
-                    request.getServiceId (),
-                    request.getServiceDescriptor ().getMethod ()));
+            throw new TimeoutException (String.format ("request %s fail to get response in time ",
+                    request.getServiceId ()));
         }
     }
 

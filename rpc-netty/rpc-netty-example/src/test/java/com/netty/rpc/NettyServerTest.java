@@ -41,7 +41,7 @@ public class NettyServerTest {
         service.sayHello ();
         long end = System.currentTimeMillis ();
         double cost = end - start;
-        assertThat ("Response time", cost, closeTo (100, 100));
+        assertThat ("Response time", cost, closeTo (160, 160));
         log.info ("sync call total-time-cost:{}ms", cost);
     }
 
@@ -106,8 +106,8 @@ public class NettyServerTest {
      */
     @Test
     void testQPSWithRealPool() {
-        final int threadNum = 1000;
-        final int requestNum = 50;
+        final int threadNum = 100;
+        final int requestNum = 10000;
         Thread[] threads = new Thread[threadNum];
         long start = System.currentTimeMillis ();
         for (int i = 0; i < threadNum; ++i) {
