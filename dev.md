@@ -184,3 +184,17 @@ try {
 ### 时间线
 
 2023/4/22 - 2023/4/23
+
+## 问题10
+
+### 简述
+
+对有返回大量数据的接口进行远程调用的时候，出现了 com.esotericsoftware.kryo.io.KryoBufferUnderflowException: Buffer underflow.
+
+### 问题解决
+
+rpc测试过程中传输过大的对象，缩小对象，因为实际RPC只是过程调用，建议在远程服务直接做好处理
+
+### 时间线
+
+2023/4/24
