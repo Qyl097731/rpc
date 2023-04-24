@@ -10,4 +10,6 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface RpcService {
     String version() default "";
+
+    boolean cache() default false;
 }
