@@ -6,13 +6,13 @@ import com.rpc.netty.codec.RpcDecoder;
 import com.rpc.netty.codec.RpcEncoder;
 import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.codec.RpcResponse;
-import com.rpc.netty.serializer.Serializer;
-import com.rpc.netty.serializer.kryo.KryoSerializer;
 import com.rpc.netty.utils.ReflectionUtils;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.compression.Lz4FrameDecoder;
+import io.netty.handler.codec.compression.Lz4FrameEncoder;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -39,6 +39,8 @@ public class NettyClientChannelInitializer extends ChannelInitializer<Channel> {
     @Override
     protected void initChannel(Channel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline ();
+        pipeline.addLast(new Lz4FrameEncoder());
+        pipeline.addLast(new Lz4FrameDecoder());
         pipeline.addLast (new RpcEncoder (ReflectionUtils.create (config.getSerializerClass ()),RpcRequest.class));
         pipeline.addLast (new RpcDecoder (ReflectionUtils.create (config.getSerializerClass ()),RpcResponse.class));
         pipeline.addLast(new RpcClientHandler());

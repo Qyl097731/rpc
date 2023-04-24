@@ -32,6 +32,7 @@
         <hamcrest-core.version>2.2</hamcrest-core.version>
         <commons-collections4>4.4</commons-collections4>
         <guava.version>30.1.1-jre</guava.version>
+        <lz4.version>1.3.0</lz4.version>
     </properties>
 
     <dependencyManagement>
@@ -41,11 +42,15 @@
                 <artifactId>commons-io</artifactId>
                 <version>${common.version}</version>
             </dependency>
+            <dependency>
+                <groupId>net.jpountz.lz4</groupId>
+                <artifactId>lz4</artifactId>
+                <version>${lz4.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>

@@ -1,5 +1,7 @@
 package com.netty.rpc.service;
 
+import com.netty.rpc.domain.User;
+
 import java.util.List;
 
 /**
@@ -14,8 +16,14 @@ public interface UserService {
     void sayHello();
 
     /**
-     * 查询所有
+     * 查询所有用户id
      * @return 用户id
      */
-    List<Integer> selectAll();
+    List<Integer> selectIds();
+
+    /**
+     * 查询所有用户信息
+     * @return
+     */
+    List<User> selectUsers();
 }

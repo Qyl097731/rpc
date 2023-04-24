@@ -49,7 +49,7 @@ public class NettyServerTest {
     void testResponseTimeWithResponse() {
         long start = System.currentTimeMillis ();
         UserService service = client.getProxy (UserService.class, "");
-        List<Integer> response = service.selectAll ();
+        List<Integer> response = service.selectIds();
         long end = System.currentTimeMillis ();
         double cost = end - start;
         assertThat ("Response time", cost, closeTo (200, 200));
@@ -99,14 +99,14 @@ public class NettyServerTest {
     }
 
     /**
-     * 模拟查询，查看并发场景下QPS
+     * 模拟查询，查看并发场景下无返回数据QPS
      *
      * @throws BrokenBarrierException
      * @throws InterruptedException
      */
     @Test
-    void testQPSWithRealPool() {
-        final int threadNum = 100;
+    void testQPSForNoResponseWithRealPool() {
+        final int threadNum = 5;
         final int requestNum = 10000;
         Thread[] threads = new Thread[threadNum];
         long start = System.currentTimeMillis ();
@@ -136,6 +136,47 @@ public class NettyServerTest {
         long end = System.currentTimeMillis ();
         double cost = end - start;
         assertThat ("Response time", cost, closeTo (10000.0, 10000.0)); // 判断响应时间是否在预期范围内
+        log.info ("Sync call total-time-cost:{}ms, req/s={}", cost, threadNum * requestNum / cost * 1000);
+    }
+
+    /**
+     * 模拟查询，查看并发场景下有大型返回数据QPS
+     *
+     * @throws BrokenBarrierException
+     * @throws InterruptedException
+     */
+    @Test
+    void testQPSForResponseWithRealPool() {
+        final int threadNum = 5;
+        final int requestNum = 10000;
+        Thread[] threads = new Thread[threadNum];
+        long start = System.currentTimeMillis ();
+        for (int i = 0; i < threadNum; ++i) {
+            threads[i] = new Thread (new Runnable () {
+                @Override
+                public void run() {
+                    for (int i = 0; i < requestNum; i++) {
+                        try {
+                            final UserService service = client.getProxy (UserService.class, "");
+                            service.selectUsers ();
+                        } catch (Exception ex) {
+                            System.out.println (ex.toString ());
+                        }
+                    }
+                }
+            });
+            threads[i].start ();
+        }
+        for (int i = 0; i < threads.length; i++) {
+            try {
+                threads[i].join ();
+            } catch (InterruptedException e) {
+                log.error (e.getMessage ());
+            }
+        }
+        long end = System.currentTimeMillis ();
+        double cost = end - start;
+        assertThat ("Response time", cost, closeTo (20000.0, 20000.0)); // 判断响应时间是否在预期范围内
         log.info ("Sync call total-time-cost:{}ms, req/s={}", cost, threadNum * requestNum / cost * 1000);
     }
 

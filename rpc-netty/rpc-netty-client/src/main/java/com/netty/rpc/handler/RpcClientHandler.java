@@ -1,21 +1,15 @@
 package com.netty.rpc.handler;
 
-import com.google.common.collect.ConcurrentHashMultiset;
-import com.netty.rpc.connect.ConnectionManager;
 import com.rpc.netty.codec.RpcFuture;
 import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.codec.RpcResponse;
-import com.rpc.netty.protocol.RpcPeer;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.util.concurrent.Future;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+
 
 
 /**
@@ -26,7 +20,6 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
     private Channel channel;
-    final Lock lock = new ReentrantLock ();
     private ConcurrentHashMap<String, RpcFuture> futureMap = new ConcurrentHashMap<> ();
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcResponse response) throws Exception {

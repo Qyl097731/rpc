@@ -9,9 +9,9 @@ import com.netty.rpc.service.UserService;
  */
 public class Client {
     public static void main(String[] args) {
-        NettyClient client = new NettyClient ();
-        UserService service = client.getProxy (UserService.class,"");
-        service.sayHello ();
-        System.out.println (service.selectAll ());
+        NettyClient client = new NettyClient();
+        UserService service = client.getProxy(UserService.class, "");
+        service.sayHello();
+        System.out.println(service.selectIds());
     }
 }

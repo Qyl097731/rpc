@@ -27,7 +27,6 @@ public class KryoSerializer extends Serializer {
     public <T> byte[] serialize(T obj) {
         Kryo kryo = KryoPool.obtain ();
         byte[] bytes = null;
-        kryo.setRegistrationRequired (false);
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream ();
              Output output = new Output (baos)) {
             kryo.writeObject (output, obj);
@@ -51,7 +50,6 @@ public class KryoSerializer extends Serializer {
     @Override
     public <T> T deserialize(byte[] bytes, Class<T> clazz) {
         Kryo kryo = KryoPool.obtain ();
-        kryo.setRegistrationRequired (false);
         T obj = null;
         try (ByteArrayInputStream bis = new ByteArrayInputStream (bytes);
              Input input = new Input (bis)) {
