@@ -106,7 +106,7 @@ public class NettyServerTest {
      */
     @Test
     void testQPSForNoResponseWithRealPool() {
-        final int threadNum = 5;
+        final int threadNum = 10;
         final int requestNum = 10000;
         Thread[] threads = new Thread[threadNum];
         long start = System.currentTimeMillis ();
@@ -147,7 +147,7 @@ public class NettyServerTest {
      */
     @Test
     void testQPSForResponseWithRealPool() {
-        final int threadNum = 5;
+        final int threadNum = 10;
         final int requestNum = 10000;
         Thread[] threads = new Thread[threadNum];
         long start = System.currentTimeMillis ();
