@@ -1,10 +1,8 @@
 package com.netty.rpc.invoker;
 
-import com.netty.rpc.manager.ServiceInstance;
+import com.netty.rpc.registry.ServiceInstance;
 import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.utils.ReflectionUtils;
-
-import java.lang.reflect.Method;
 
 /**
  * @description 服务调用类

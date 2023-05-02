@@ -1,5 +1,8 @@
 package com.netty.rpc.manager;
 
+import com.netty.rpc.registry.LocalServiceRegistry;
+import com.netty.rpc.registry.ServiceInstance;
+import com.netty.rpc.registry.ServiceRegistry;
 import com.rpc.netty.annotation.RpcService;
 import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.protocol.ServiceDescriptor;
@@ -7,7 +10,6 @@ import com.rpc.netty.utils.AnnotationUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,17 +21,20 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 public class ServiceManager {
-    private static ConcurrentHashMap<ServiceDescriptor, ServiceInstance> services;
+    private static ServiceRegistry serviceRegistry = new LocalServiceRegistry ();
 
-    private ServiceManager() {
-        services = new ConcurrentHashMap<> ();
-    }
+    private ServiceManager() {}
 
     private static class ServiceHolder {
         private static final ServiceManager instance = new ServiceManager ();
     }
 
     public static ServiceManager getInstance() {
+        return ServiceHolder.instance;
+    }
+
+    public static ServiceManager getInstance(ServiceRegistry registry) {
+        ServiceManager.serviceRegistry = registry;
         return ServiceHolder.instance;
     }
 
@@ -58,19 +63,7 @@ public class ServiceManager {
      * @param <P>      实现类类型
      */
     public static <T, P> void register(Class<T> clazz, P instance) {
-        Method[] methods = AnnotationUtils.getExplodedMethods (instance.getClass ());
-        RpcService classAnnotation = null, methodAnnotation = null;
-        if (instance.getClass ().isAnnotationPresent (RpcService.class)) {
-            classAnnotation = instance.getClass ().getAnnotation (RpcService.class);
-        }
-        for (Method method : methods) {
-            String version = method.isAnnotationPresent (RpcService.class) ?
-                    method.getAnnotation (RpcService.class).version () : classAnnotation.version ();
-            ServiceDescriptor descriptor = ServiceDescriptor.of (clazz, method, version);
-            ServiceInstance service = new ServiceInstance (instance, method);
-            services.put (descriptor, service);
-            log.info ("{} {} success to register ", instance.getClass ().getName (), method.getName ());
-        }
+        serviceRegistry.register(clazz, instance);
     }
 
     /**
@@ -81,7 +74,6 @@ public class ServiceManager {
      * @return
      */
     public static <T> T lookup(RpcRequest request) {
-        ServiceDescriptor desc = request.getServiceDescriptor ();
-        return (T) services.getOrDefault (desc, null);
+        return serviceRegistry.lookup (request);
     }
 }

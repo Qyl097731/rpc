@@ -1,8 +1,8 @@
 package com.netty.rpc.handler;
 
 import com.netty.rpc.invoker.ServiceInvoker;
-import com.netty.rpc.manager.ServiceInstance;
 import com.netty.rpc.manager.ServiceManager;
+import com.netty.rpc.registry.ServiceInstance;
 import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.codec.RpcResponse;
 import com.rpc.netty.utils.CustomerThreadPoolExecutorPoolUtil;

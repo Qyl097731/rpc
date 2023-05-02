@@ -2,12 +2,9 @@ package com.netty.rpc;
 
 import ch.qos.logback.core.spi.LifeCycle;
 import com.netty.rpc.config.NettyServerConfig;
+import com.netty.rpc.handler.NettyServerInitializer;
 import com.netty.rpc.manager.ServiceManager;
-import com.rpc.netty.annotation.RpcService;
-import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.serializer.Serializers;
-import com.rpc.netty.utils.AnnotationUtils;
-import com.rpc.netty.utils.ReflectionUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -17,8 +14,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Objects;
 
 /**

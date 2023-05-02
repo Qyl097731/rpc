@@ -1,6 +1,6 @@
 package com.netty.rpc.connect;
 
-import com.netty.rpc.NettyClientChannelInitializer;
+import com.netty.rpc.handler.NettyClientChannelInitializer;
 import com.netty.rpc.config.NettyClientConfig;
 import com.netty.rpc.route.LoadBalance;
 import com.netty.rpc.handler.RpcClientHandler;
@@ -8,17 +8,11 @@ import com.netty.rpc.route.impl.RandomLoadBalance;
 import com.rpc.netty.serializer.Serializers;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.Inet4Address;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**

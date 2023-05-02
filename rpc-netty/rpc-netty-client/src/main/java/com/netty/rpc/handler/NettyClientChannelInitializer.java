@@ -1,4 +1,4 @@
-package com.netty.rpc;
+package com.netty.rpc.handler;
 
 import com.netty.rpc.config.NettyClientConfig;
 import com.netty.rpc.handler.RpcClientHandler;

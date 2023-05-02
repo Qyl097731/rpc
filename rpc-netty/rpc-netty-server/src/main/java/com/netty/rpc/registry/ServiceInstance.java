@@ -1,4 +1,4 @@
-package com.netty.rpc.manager;
+package com.netty.rpc.registry;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
