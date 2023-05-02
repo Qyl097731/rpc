@@ -11,8 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 
 /**
  * @description 服务注册中心
@@ -21,7 +22,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 public class ServiceManager {
-    private static ServiceRegistry serviceRegistry = new LocalServiceRegistry ();
+    // 所选择的注册器
+    private static ServiceRegistry serviceRegistry;
+    // 当前服务提供者的ip和端口
+    private static String host;
+    private static Integer port;
 
     private ServiceManager() {}
 
@@ -29,12 +34,14 @@ public class ServiceManager {
         private static final ServiceManager instance = new ServiceManager ();
     }
 
-    public static ServiceManager getInstance() {
-        return ServiceHolder.instance;
+    public static ServiceManager getInstance(String host,int port) {
+        return getInstance (host,port,new LocalServiceRegistry ());
     }
 
-    public static ServiceManager getInstance(ServiceRegistry registry) {
-        ServiceManager.serviceRegistry = registry;
+    public static ServiceManager getInstance(String serverHost,int serverPort,ServiceRegistry registry) {
+        host = serverHost;
+        port = serverPort;
+        serviceRegistry = registry;
         return ServiceHolder.instance;
     }
 
@@ -47,11 +54,13 @@ public class ServiceManager {
      * @throws InstantiationException
      * @throws IllegalAccessException
      */
-    public void registerServices(String[] basePackages) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public void registerServices(String[] basePackages) throws Exception {
         List<Class<?>> classes = AnnotationUtils.getServicesClasses (basePackages);
+        HashMap<ServiceDescriptor, ServiceInstance> services = new HashMap<> ();
         for (Class<?> clazz : classes) {
-            register (clazz.getInterfaces ()[0], clazz.newInstance ());
+            services.putAll (register (clazz.getInterfaces ()[0], clazz.newInstance ()));
         }
+        serviceRegistry.register (host,port,services);
     }
 
     /**
@@ -61,9 +70,23 @@ public class ServiceManager {
      * @param instance 实现类实例
      * @param <T>      接口类型
      * @param <P>      实现类类型
+     * @return services服务
      */
-    public static <T, P> void register(Class<T> clazz, P instance) {
-        serviceRegistry.register(clazz, instance);
+    public <T, P> Map<? extends ServiceDescriptor, ? extends ServiceInstance> register(Class<T> clazz, P instance) {
+        HashMap<ServiceDescriptor, ServiceInstance> services = new HashMap<> ();
+        Method[] methods = AnnotationUtils.getExplodedMethods (instance.getClass ());
+        RpcService classAnnotation = null, methodAnnotation = null;
+        if (instance.getClass ().isAnnotationPresent (RpcService.class)) {
+            classAnnotation = instance.getClass ().getAnnotation (RpcService.class);
+        }
+        for (Method method : methods) {
+            String version = method.isAnnotationPresent (RpcService.class) ?
+                    method.getAnnotation (RpcService.class).version () : classAnnotation.version ();
+            ServiceDescriptor descriptor = ServiceDescriptor.of (clazz, method, version);
+            ServiceInstance service = new ServiceInstance (instance, method);
+            services.put (descriptor, service);
+        }
+        return services;
     }
 
     /**

@@ -11,7 +11,7 @@ import java.io.IOException;
  * @author: qyl
  */
 public class Server {
-    public static void main(String[] args) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public static void main(String[] args) throws Exception {
         NettyServer server = new NettyServer ();
     }
 }

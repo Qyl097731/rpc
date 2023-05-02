@@ -2,8 +2,7 @@ package com.netty.rpc.registry;
 
 import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.protocol.ServiceDescriptor;
-
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 
 /**
  * @description 注册中心
@@ -11,9 +10,19 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author: qyl
  */
 public abstract class ServiceRegistry {
-    protected static ConcurrentHashMap<ServiceDescriptor, ServiceInstance> services = new ConcurrentHashMap<> ();
-
-    public abstract <T, P> void register(Class<T> clazz, P instance);
-
+    /**
+     * 服务发现
+     * @param request
+     * @return
+     * @param <T>
+     */
     public abstract <T> T lookup(RpcRequest request);
+
+    /**
+     * 把某个服务提供者的所有服务进行注册
+     * @param host
+     * @param port
+     * @param services
+     */
+    public abstract void register(String host, int port, Map<ServiceDescriptor, ServiceInstance> services) throws Exception;
 }

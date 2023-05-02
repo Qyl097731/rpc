@@ -23,7 +23,7 @@ public class NettyServerTest {
     private static NettyServer server;
 
     @BeforeAll
-    static void setUp() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+    static void setUp() throws Exception {
         server = new NettyServer ();
         client = new NettyClient ();
     }

@@ -33,8 +33,8 @@ public class NettyServer implements LifeCycle {
     private static final String[] BASE_PACKAGES = new String[] {"com.netty.rpc.service"};
     private final ServiceManager manager;
 
-    public NettyServer() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        manager = ServiceManager.getInstance ();
+    public NettyServer() throws Exception {
+        manager = ServiceManager.getInstance (host,port);
         if (Objects.isNull (manager)){
             log.error("注册中心初始化失败");
             throw new RuntimeException("注册中心初始化失败");
