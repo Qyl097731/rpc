@@ -1,19 +1,17 @@
 package com.netty.rpc.registry;
 
-import com.rpc.netty.annotation.RpcService;
 import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.protocol.RpcPeer;
 import com.rpc.netty.protocol.ServiceDescriptor;
-import com.rpc.netty.utils.AnnotationUtils;
 import com.rpc.netty.utils.JsonUtil;
 import com.rpc.netty.zookeeper.CuratorClient;
 import lombok.extern.slf4j.Slf4j;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+
+import static com.rpc.netty.common.Constant.ZK_SERVICE_PATH;
 
 /**
  * @description Zookeeper实现服务注册
@@ -21,11 +19,10 @@ import java.util.Set;
  * @author: qyl
  */
 @Slf4j
-public class ZookeeperServiceRegistry extends ServiceRegistry{
+public class ZookeeperServiceRegistry extends ServiceRegistry {
     private CuratorClient client;
 
     private List<String> pathList = new ArrayList<> ();
-    private static final String ZK_SERVICE_PATH = "/services/";
     public ZookeeperServiceRegistry() throws InterruptedException {
         client = new CuratorClient ();
     }
@@ -56,10 +53,9 @@ public class ZookeeperServiceRegistry extends ServiceRegistry{
             serviceDescriptorList.add (entry.getKey ());
         }
         RpcPeer peer = new RpcPeer (host, port, serviceDescriptorList);
-        String json = JsonUtil.objectToJson (peer);
-        byte[] bytes = json.getBytes ();
+        byte[] bytes = JsonUtil.serialize (peer);
         String path = ZK_SERVICE_PATH + "-" + peer.hashCode ();
-        client.createPathData (ZK_SERVICE_PATH, bytes);
+        client.createPathData (path, bytes);
         pathList.add (path);
     }
 }

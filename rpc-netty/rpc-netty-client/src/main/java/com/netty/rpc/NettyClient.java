@@ -16,10 +16,12 @@ import java.util.Objects;
 @Slf4j
 public class NettyClient {
     public NettyClient() {
-        if (Objects.isNull (ConnectionManager.getInstance ())){
-            log.error("连接管理器初始化失败");
+        ConnectionManager connectionManager = ConnectionManager.getInstance ();
+        if (Objects.isNull (connectionManager)){
+            log.error("连接管理器获取失败失败");
             throw new RuntimeException("连接管理器初始化失败");
         }else {
+            connectionManager.updateConnectionPool();
             log.info("连接管理器初始化成功");
         }
     }

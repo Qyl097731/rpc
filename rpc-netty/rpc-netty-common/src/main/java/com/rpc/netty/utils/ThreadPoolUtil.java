@@ -9,13 +9,13 @@ import java.util.concurrent.*;
  *
  * @author qyl
  */
-public class CustomerThreadPoolExecutorPoolUtil {
+public class ThreadPoolUtil {
     private static ExecutorService pool = null;
     private static final ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat("rpc-netty-%d").build();
     private static final int CORE_POOL_SIZE = Runtime.getRuntime().availableProcessors() + 1;
     private static final int MAXIMUM_POOL_SIZE = Runtime.getRuntime().availableProcessors() * 2 + 1;
 
-    private CustomerThreadPoolExecutorPoolUtil() {}
+    private ThreadPoolUtil() {}
 
     public static void destroy() {
         if (pool != null) {

@@ -3,14 +3,14 @@ package com.netty.rpc.handler;
 import com.rpc.netty.codec.RpcFuture;
 import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.codec.RpcResponse;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.ConcurrentHashMap;
-
-
 
 /**
  * @description 代理类进行远程嗲用
@@ -54,5 +54,12 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
             throw new RuntimeException (e);
         }
         return future;
+    }
+
+    /**
+     * 一旦空缓冲区发送完毕关闭channel，就关闭channel，防止资源泄漏和进一步的数据传输。
+     */
+    public void close() {
+        channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
     }
 }

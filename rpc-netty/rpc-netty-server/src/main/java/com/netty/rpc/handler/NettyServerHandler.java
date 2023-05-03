@@ -5,7 +5,7 @@ import com.netty.rpc.manager.ServiceManager;
 import com.netty.rpc.registry.ServiceInstance;
 import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.codec.RpcResponse;
-import com.rpc.netty.utils.CustomerThreadPoolExecutorPoolUtil;
+import com.rpc.netty.utils.ThreadPoolUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutorService;
  */
 @Slf4j
 public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
-    private static final ExecutorService threadPool = CustomerThreadPoolExecutorPoolUtil.getThreadPoolExecutor ();
+    private static final ExecutorService threadPool = ThreadPoolUtil.getThreadPoolExecutor ();
     /**
      * 通过线程池实现业务和IO隔离
      * Is called for each message of type {@link RpcRequest}.
