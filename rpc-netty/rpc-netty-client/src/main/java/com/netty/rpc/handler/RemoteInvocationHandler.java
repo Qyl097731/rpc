@@ -1,10 +1,8 @@
 package com.netty.rpc.handler;
 
 import com.netty.rpc.connect.ConnectionManager;
-import com.rpc.netty.annotation.RpcService;
 import com.rpc.netty.codec.RpcFuture;
 import com.rpc.netty.codec.RpcRequest;
-import com.rpc.netty.codec.RpcResponse;
 import com.rpc.netty.protocol.ServiceDescriptor;
 import com.rpc.netty.utils.ReflectionUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -59,11 +57,10 @@ public class RemoteInvocationHandler implements InvocationHandler {
         }
     }
 
-    private Object invokeRemote(RpcRequest request) throws ExecutionException, InterruptedException {
+    private Object invokeRemote(RpcRequest request) throws Exception {
         ConnectionManager manager = ConnectionManager.getInstance ();
-        RpcClientHandler handler = manager.borrow ();
+        RpcClientHandler handler = manager.borrow (request);
         RpcFuture future = handler.send (request);
-        manager.release (handler);
         return future.get ();
     }
 }

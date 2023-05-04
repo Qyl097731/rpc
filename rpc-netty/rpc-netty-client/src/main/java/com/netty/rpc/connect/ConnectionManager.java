@@ -4,13 +4,13 @@ import com.netty.rpc.handler.NettyClientChannelInitializer;
 import com.netty.rpc.config.NettyClientConfig;
 import com.netty.rpc.route.LoadBalance;
 import com.netty.rpc.handler.RpcClientHandler;
-import com.netty.rpc.route.impl.RandomLoadBalance;
+import com.netty.rpc.route.impl.LoadBalanceRandom;
+import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.protocol.RpcPeer;
 import com.rpc.netty.protocol.ServiceDescriptor;
 import com.rpc.netty.serializer.Serializers;
 import com.rpc.netty.utils.ThreadPoolUtil;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -36,13 +36,7 @@ import static org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent.
  */
 @Slf4j
 public class ConnectionManager {
-    private static final int DEFAULT_SIZE = 10;
-    private static final int MAX_SIZE = 20;
-    private static final String DEFAULT_HOST = "127.0.0.1";
-    private static final int DEFAULT_PORT = 3000;
     private final Bootstrap bootstrap = new Bootstrap ();
-
-    private final CopyOnWriteArrayList<RpcClientHandler> connectionPool = new CopyOnWriteArrayList<> ();
 
     private final ExecutorService threadPool = ThreadPoolUtil.getThreadPoolExecutor ();
 
@@ -50,7 +44,7 @@ public class ConnectionManager {
 
     private final CopyOnWriteArraySet<RpcPeer> serviceCache = new CopyOnWriteArraySet<> ();
 
-    private LoadBalance loadBalance;
+    private LoadBalance loadBalance = new LoadBalanceRandom();
 
     private static class SingletonHolder {
         private static final ConnectionManager instance = new ConnectionManager ();
@@ -69,33 +63,6 @@ public class ConnectionManager {
 
     public static ConnectionManager getInstance() {
         return SingletonHolder.instance;
-    }
-
-    /**
-     * 本地连接，没有引入ZK，同时未进行动态上下线的监听
-     */
-    public void updateConnectionPool() {
-        updateConnectionPool (DEFAULT_SIZE);
-    }
-
-    /**
-     * 只能连接一个服务提供者，没有上下文监听
-     *
-     * @param size 默认连接池大小
-     */
-    public void updateConnectionPool(int size) {
-        int capacity = size > MAX_SIZE ? DEFAULT_SIZE : size;
-        for (int i = 0; i < capacity; i++) {
-            try {
-                Channel channel = bootstrap.connect (DEFAULT_HOST, DEFAULT_PORT).sync ().channel ();
-                RpcClientHandler handler = channel.pipeline ().get (RpcClientHandler.class);
-                connectionPool.add (handler);
-            } catch (InterruptedException e) {
-                log.error ("fail to connect to server");
-                throw new RuntimeException (e);
-            }
-        }
-        loadBalance = new RandomLoadBalance ();
     }
 
     /**
@@ -135,11 +102,9 @@ public class ConnectionManager {
         } else if (type == CHILD_REMOVED) {
             removeAndCloseHandler (peer);
         }else if (type == CHILD_UPDATED){
-            removeAndCloseHandler (peer);
-            connectServerNode(peer);
+            updateServerNode(peer);
         }
     }
-
 
     /**
      * 建立连接，线程池加速连接建立
@@ -173,6 +138,16 @@ public class ConnectionManager {
     }
 
     /**
+     * 一个服务提供者，先缓存冲删除，后添加回去。复用连接handler
+     * @param peer
+     *
+     */
+    private void updateServerNode(RpcPeer peer) {
+        serviceCache.remove(peer);
+        serviceCache.add(peer);
+    }
+
+    /**
      * 移除并且关闭handler 防止资源泄露
      * @param server
      */
@@ -186,11 +161,18 @@ public class ConnectionManager {
         log.info ("remove {}:{} from connection pool", server.getHost (), server.getPort ());
     }
 
-    public RpcClientHandler borrow() {
-        return loadBalance.choose (connectionPool);
-    }
-
-    public void release(RpcClientHandler handler) {
-        connectionPool.add (handler);
+    /**
+     * 根据服务进行负载均衡，获取服务提供者
+     * @param request
+     * @return
+     */
+    public RpcClientHandler borrow(RpcRequest request) throws Exception {
+        RpcPeer peer = loadBalance.route(request.getServiceDescriptor(), connectionMap);
+        RpcClientHandler handler = connectionMap.get(peer);
+        if (handler == null){
+            throw new Exception("Can not get available connection");
+        }else {
+            return handler;
+        }
     }
 }

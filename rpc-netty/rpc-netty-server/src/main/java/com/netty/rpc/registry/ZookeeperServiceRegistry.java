@@ -1,6 +1,5 @@
 package com.netty.rpc.registry;
 
-import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.protocol.RpcPeer;
 import com.rpc.netty.protocol.ServiceDescriptor;
 import com.rpc.netty.utils.JsonUtil;
@@ -23,21 +22,8 @@ public class ZookeeperServiceRegistry extends ServiceRegistry {
     private CuratorClient client;
 
     private List<String> pathList = new ArrayList<> ();
-    public ZookeeperServiceRegistry() throws InterruptedException {
+    public ZookeeperServiceRegistry() {
         client = new CuratorClient ();
-    }
-
-    /**
-     * 根据请求 进行服务查找
-     *
-     * @param request
-     * @param <T>
-     * @return
-     */
-    public  <T> T lookup(RpcRequest request) {
-//        ServiceDescriptor desc = request.getServiceDescriptor ();
-//        return (T) services.getOrDefault (desc, null);
-        return null;
     }
 
     /**
@@ -48,6 +34,7 @@ public class ZookeeperServiceRegistry extends ServiceRegistry {
      */
     @Override
     public void register(String host, int port, Map<ServiceDescriptor, ServiceInstance> services) throws Exception {
+        this.services.putAll(services);
         List<ServiceDescriptor> serviceDescriptorList = new ArrayList<> ();
         for (Map.Entry<ServiceDescriptor, ServiceInstance> entry : services.entrySet ()) {
             serviceDescriptorList.add (entry.getKey ());

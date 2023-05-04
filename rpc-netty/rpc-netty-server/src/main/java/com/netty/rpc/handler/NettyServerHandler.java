@@ -28,10 +28,9 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
      * @param ctx the {@link ChannelHandlerContext} which this {@link SimpleChannelInboundHandler}
      *            belongs to
      * @param request the message to handle
-     * @throws Exception is thrown if an error occurred
      */
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, RpcRequest request) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, RpcRequest request) {
         log.info("收到客户端的请求 ..." + request.toString());
         threadPool.execute (new RespondTask (ctx,request));
     }

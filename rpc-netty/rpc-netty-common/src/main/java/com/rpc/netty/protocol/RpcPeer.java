@@ -32,11 +32,11 @@ public class RpcPeer {
         if (this == o) return true;
         if (!(o instanceof RpcPeer)) return false;
         RpcPeer rpcPeer = (RpcPeer) o;
-        return Objects.equals (host, rpcPeer.host) && Objects.equals (port, rpcPeer.port) && Objects.equals (services, rpcPeer.services);
+        return Objects.equals (host, rpcPeer.host) && Objects.equals (port, rpcPeer.port);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash (host, port, services);
+        return Objects.hash (host, port);
     }
 }

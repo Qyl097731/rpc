@@ -1,8 +1,8 @@
 package com.netty.rpc.manager;
 
-import com.netty.rpc.registry.LocalServiceRegistry;
 import com.netty.rpc.registry.ServiceInstance;
 import com.netty.rpc.registry.ServiceRegistry;
+import com.netty.rpc.registry.ZookeeperServiceRegistry;
 import com.rpc.netty.annotation.RpcService;
 import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.protocol.ServiceDescriptor;
@@ -35,7 +35,7 @@ public class ServiceManager {
     }
 
     public static ServiceManager getInstance(String host,int port) {
-        return getInstance (host,port,new LocalServiceRegistry ());
+        return getInstance (host,port,new ZookeeperServiceRegistry());
     }
 
     public static ServiceManager getInstance(String serverHost,int serverPort,ServiceRegistry registry) {
