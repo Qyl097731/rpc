@@ -40,7 +40,7 @@ public class RemoteInvocationHandler implements InvocationHandler {
                 return invokeLocal (proxy,method,args);
             }
         }catch (Exception e) {
-            log.error("调用远程{}#{}失败...{}", target,method.getName(),e);
+            log.error("调用远程{}#{}失败...{}", target.getSimpleName (),method.getName(),e.getMessage ());
         }
         return null;
     }

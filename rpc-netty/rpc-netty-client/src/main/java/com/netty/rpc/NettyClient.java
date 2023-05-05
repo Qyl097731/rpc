@@ -2,6 +2,7 @@ package com.netty.rpc;
 
 
 import com.netty.rpc.connect.ConnectionManager;
+import com.netty.rpc.discovery.ServiceDiscovery;
 import com.netty.rpc.handler.RemoteInvocationHandler;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,13 +16,14 @@ import java.util.Objects;
  */
 @Slf4j
 public class NettyClient {
+    private ServiceDiscovery serviceDiscovery;
     public NettyClient() {
         ConnectionManager connectionManager = ConnectionManager.getInstance ();
         if (Objects.isNull (connectionManager)){
             log.error("连接管理器获取失败失败");
             throw new RuntimeException("连接管理器初始化失败");
         }else {
-            connectionManager.updateConnectionPool();
+            serviceDiscovery = new ServiceDiscovery ();
             log.info("连接管理器初始化成功");
         }
     }

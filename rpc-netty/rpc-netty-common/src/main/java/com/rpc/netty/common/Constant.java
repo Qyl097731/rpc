@@ -6,5 +6,5 @@ package com.rpc.netty.common;
  * @author: qyl
  */
 public class Constant {
-    public static final String ZK_SERVICE_PATH = "/services/";
+    public static final String ZK_SERVICE_PATH = "/services";
 }

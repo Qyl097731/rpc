@@ -21,7 +21,7 @@ public class CuratorClient {
     public CuratorClient() {
         RetryPolicy retryPolicy = new ExponentialBackoffRetry (1000, 3);
         client = CuratorFrameworkFactory.builder ()
-                .connectString ("server:2181")
+                .connectString ("master:2181")
                 .sessionTimeoutMs (3000)
                 .connectionTimeoutMs (5000)
                 .retryPolicy (retryPolicy)
@@ -29,17 +29,35 @@ public class CuratorClient {
         client.start ();
     }
 
+    /**
+     * 临时服务节点注册
+     * @param path
+     * @param data
+     * @return 注册路径
+     * @throws Exception
+     */
     public String createPathData(String path, byte[] data) throws Exception {
         return client.create ().creatingParentsIfNeeded ()
                 .withMode (CreateMode.EPHEMERAL_SEQUENTIAL)
                 .forPath (path, data);
     }
 
+    /**
+     * 获取指定的路径下的直系节点
+     * @param path
+     * @return 直接孩子集合
+     * @throws Exception
+     */
     public List<String> getChildren(String path) throws Exception {
         return client.getChildren ().forPath (path);
     }
 
-
+    /**
+     * 获取指定路径下的节点数据
+     * @param path
+     * @return 节点数据
+     * @throws Exception
+     */
     public byte[] getData(String path) throws Exception {
         return client.getData ().forPath (path);
     }

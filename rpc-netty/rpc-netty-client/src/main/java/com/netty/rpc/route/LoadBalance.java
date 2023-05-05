@@ -20,32 +20,50 @@ import java.util.concurrent.ThreadLocalRandom;
 public interface LoadBalance {
     /**
      * 真正的负载均衡，通过ZK注册的多个Provider中获取一个Provider
+     *
      * @param service
      * @param connectionPool
      * @return handler处理器
      * @throws Exception 没有相应的服务
      */
-    RpcPeer route(ServiceDescriptor service, Map<RpcPeer,RpcClientHandler> connectionPool) throws Exception;
+    default RpcPeer route(ServiceDescriptor service, Map<RpcPeer, RpcClientHandler> connectionPool) throws Exception {
+        Map<ServiceDescriptor, List<RpcPeer>> serverProviderMap = revertProviderMap (connectionPool);
+        if (serverProviderMap != null) {
+            List<RpcPeer> serviceProviders = serverProviderMap.get (service);
+            if (CollectionUtils.isNotEmpty (serviceProviders)) {
+                return doRoute (serviceProviders);
+            }
+        }
+        throw new Exception ("Can not find connection for service: " + service.getClazz () + "." + service.getMethod () + " " + service.getVersion ());
+    }
 
     /**
      * 将<服务提供者,处理器>的map变成<服务，多个服务提供者节点>，以便真正负载均衡
+     *
      * @param connectionPool
      * @return <服务，多个服务提供者节点> map
      */
     default Map<ServiceDescriptor, List<RpcPeer>> revertProviderMap(Map<RpcPeer, RpcClientHandler> connectionPool) {
-        Map<ServiceDescriptor,List<RpcPeer>> serverProviderMap = new HashMap<>();
-        for (Map.Entry<RpcPeer, RpcClientHandler> entry : connectionPool.entrySet()) {
-            List<ServiceDescriptor> services = entry.getKey().getServices();
-            if (!CollectionUtils.isEmpty(services)){
+        Map<ServiceDescriptor, List<RpcPeer>> serverProviderMap = new HashMap<> ();
+        for (Map.Entry<RpcPeer, RpcClientHandler> entry : connectionPool.entrySet ()) {
+            List<ServiceDescriptor> services = entry.getKey ().getServices ();
+            if (!CollectionUtils.isEmpty (services)) {
                 for (ServiceDescriptor service : services) {
-                    List<RpcPeer> serversProviders = serverProviderMap.get(service);
-                    if (serversProviders == null){
-                        serversProviders = new ArrayList<>();
+                    List<RpcPeer> serversProviders = serverProviderMap.get (service);
+                    if (serversProviders == null) {
+                        serversProviders = new ArrayList<> ();
                     }
-                    serverProviderMap.putIfAbsent(service,serversProviders);
+                    serverProviderMap.putIfAbsent (service, serversProviders);
                 }
             }
         }
         return serverProviderMap;
     }
+
+    /**
+     * 负载均衡接口方法
+     * @param serviceProviders
+     * @return
+     */
+    RpcPeer doRoute(List<RpcPeer> serviceProviders);
 }

@@ -20,8 +20,6 @@ import static com.rpc.netty.common.Constant.ZK_SERVICE_PATH;
 @Slf4j
 public class ZookeeperServiceRegistry extends ServiceRegistry {
     private CuratorClient client;
-
-    private List<String> pathList = new ArrayList<> ();
     public ZookeeperServiceRegistry() {
         client = new CuratorClient ();
     }
@@ -41,8 +39,7 @@ public class ZookeeperServiceRegistry extends ServiceRegistry {
         }
         RpcPeer peer = new RpcPeer (host, port, serviceDescriptorList);
         byte[] bytes = JsonUtil.serialize (peer);
-        String path = ZK_SERVICE_PATH + "-" + peer.hashCode ();
+        String path = ZK_SERVICE_PATH + "/" + peer.hashCode ();
         client.createPathData (path, bytes);
-        pathList.add (path);
     }
 }

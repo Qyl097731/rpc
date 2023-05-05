@@ -38,9 +38,8 @@ public class NettyServer implements LifeCycle {
         if (Objects.isNull (manager)){
             log.error("注册中心初始化失败");
             throw new RuntimeException("注册中心初始化失败");
-        }else {
-            log.info("注册中心初始化成功");
         }
+        log.info("注册中心初始化成功");
         manager.registerServices (BASE_PACKAGES);
         start ();
     }

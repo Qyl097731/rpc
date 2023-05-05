@@ -22,10 +22,7 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.*;
 
 import static org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent.Type.*;
 
@@ -101,8 +98,8 @@ public class ConnectionManager {
             connectServerNode (peer);
         } else if (type == CHILD_REMOVED) {
             removeAndCloseHandler (peer);
-        }else if (type == CHILD_UPDATED){
-            updateServerNode(peer);
+        } else if (type == CHILD_UPDATED) {
+            updateServerNode (peer);
         }
     }
 
@@ -127,9 +124,9 @@ public class ConnectionManager {
             InetSocketAddress address = new InetSocketAddress (server.getHost (), server.getPort ());
             bootstrap.connect (address).addListener ((ChannelFutureListener) future -> {
                 if (future.isSuccess ()) {
-                    log.info ("connect to server {}:{} success", server.getHost (), server.getPort ());
                     RpcClientHandler handler = future.channel ().pipeline ().get (RpcClientHandler.class);
                     connectionMap.put (server, handler);
+                    log.info ("connect to server {}:{} success", server.getHost (), server.getPort ());
                 } else {
                     log.error ("Can not connect to remote server, remote peer = " + server);
                 }
@@ -140,11 +137,10 @@ public class ConnectionManager {
     /**
      * 一个服务提供者，先缓存冲删除，后添加回去。复用连接handler
      * @param peer
-     *
      */
     private void updateServerNode(RpcPeer peer) {
-        serviceCache.remove(peer);
-        serviceCache.add(peer);
+        serviceCache.remove (peer);
+        serviceCache.add (peer);
     }
 
     /**
@@ -153,8 +149,8 @@ public class ConnectionManager {
      */
     private void removeAndCloseHandler(RpcPeer server) {
         RpcClientHandler handler = connectionMap.get (server);
-        if (handler != null){
-            handler.close();
+        if (handler != null) {
+            handler.close ();
         }
         serviceCache.remove (server);
         connectionMap.remove (server);
@@ -163,15 +159,17 @@ public class ConnectionManager {
 
     /**
      * 根据服务进行负载均衡，获取服务提供者
+     * TODO 通过自旋等待来实现读写互斥
+     *
      * @param request
      * @return
      */
     public RpcClientHandler borrow(RpcRequest request) throws Exception {
-        RpcPeer peer = loadBalance.route(request.getServiceDescriptor(), connectionMap);
-        RpcClientHandler handler = connectionMap.get(peer);
-        if (handler == null){
-            throw new Exception("Can not get available connection");
-        }else {
+        RpcPeer peer = loadBalance.route (request.getServiceDescriptor (), connectionMap);
+        RpcClientHandler handler = connectionMap.get (peer);
+        if (handler == null) {
+            throw new Exception ("Can not get available connection");
+        } else {
             return handler;
         }
     }
