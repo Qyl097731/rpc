@@ -80,11 +80,13 @@ public class ServiceManager {
             classAnnotation = instance.getClass ().getAnnotation (RpcService.class);
         }
         for (Method method : methods) {
-            String version = method.isAnnotationPresent (RpcService.class) ?
-                    method.getAnnotation (RpcService.class).version () : classAnnotation.version ();
-            ServiceDescriptor descriptor = ServiceDescriptor.of (clazz, method, version);
-            ServiceInstance service = new ServiceInstance (instance, method);
-            services.put (descriptor, service);
+            if (!method.getDeclaringClass ().equals (Object.class)){
+                String version = method.isAnnotationPresent (RpcService.class) ?
+                        method.getAnnotation (RpcService.class).version () : classAnnotation.version ();
+                ServiceDescriptor descriptor = ServiceDescriptor.of (clazz, method, version);
+                ServiceInstance service = new ServiceInstance (instance, method);
+                services.put (descriptor, service);
+            }
         }
         return services;
     }
