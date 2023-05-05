@@ -35,6 +35,9 @@ public class NettyServerTest {
         client = null;
     }
 
+    /**
+     * 测试单个请求，并且无响应数据时的响应时间
+     */
     @Test
     void testResponseTimeWithoutResponse() {
         long start = System.currentTimeMillis ();
@@ -42,10 +45,13 @@ public class NettyServerTest {
         service.sayHello ();
         long end = System.currentTimeMillis ();
         double cost = end - start;
-        assertThat ("Response time", cost, closeTo (160, 160));
+        assertThat ("Response time", cost, closeTo (250, 250));
         log.info ("sync call total-time-cost:{}ms", cost);
     }
 
+    /**
+     * 测试单个请求，并且有响应数据时的响应时间
+     */
     @Test
     void testResponseTimeWithResponse() {
         long start = System.currentTimeMillis ();
@@ -53,7 +59,7 @@ public class NettyServerTest {
         List<Integer> response = service.selectIds();
         long end = System.currentTimeMillis ();
         double cost = end - start;
-        assertThat ("Response time", cost, closeTo (200, 200));
+        assertThat ("Response time", cost, closeTo (250, 250));
         assertThat ("Response length", response.size () == 3);
         log.info ("sync call total-time-cost:{}ms", cost);
     }
@@ -136,7 +142,7 @@ public class NettyServerTest {
         }
         long end = System.currentTimeMillis ();
         double cost = end - start;
-        assertThat ("Response time", cost, closeTo (10000.0, 10000.0)); // 判断响应时间是否在预期范围内
+        assertThat ("Response time", cost, closeTo (10*1000, 10*1000)); // 判断响应时间是否在预期范围内
         log.info ("Sync call total-time-cost:{}ms, req/s={}", cost, threadNum * requestNum / cost * 1000);
     }
 

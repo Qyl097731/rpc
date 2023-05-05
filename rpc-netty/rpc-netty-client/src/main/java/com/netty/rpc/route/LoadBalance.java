@@ -34,7 +34,7 @@ public interface LoadBalance {
                 return doRoute (serviceProviders);
             }
         }
-        throw new Exception ("Can not find connection for service: " + service.getClazz () + "." + service.getMethod () + " " + service.getVersion ());
+        return null;
     }
 
     /**
@@ -46,13 +46,15 @@ public interface LoadBalance {
     default Map<ServiceDescriptor, List<RpcPeer>> revertProviderMap(Map<RpcPeer, RpcClientHandler> connectionPool) {
         Map<ServiceDescriptor, List<RpcPeer>> serverProviderMap = new HashMap<> ();
         for (Map.Entry<RpcPeer, RpcClientHandler> entry : connectionPool.entrySet ()) {
-            List<ServiceDescriptor> services = entry.getKey ().getServices ();
+            RpcPeer peer = entry.getKey ();
+            List<ServiceDescriptor> services = peer.getServices ();
             if (!CollectionUtils.isEmpty (services)) {
                 for (ServiceDescriptor service : services) {
                     List<RpcPeer> serversProviders = serverProviderMap.get (service);
                     if (serversProviders == null) {
                         serversProviders = new ArrayList<> ();
                     }
+                    serversProviders.add (peer);
                     serverProviderMap.putIfAbsent (service, serversProviders);
                 }
             }

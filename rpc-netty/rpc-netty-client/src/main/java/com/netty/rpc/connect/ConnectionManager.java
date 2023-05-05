@@ -23,6 +23,8 @@ import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent.Type.*;
 
@@ -41,7 +43,18 @@ public class ConnectionManager {
 
     private final CopyOnWriteArraySet<RpcPeer> serviceCache = new CopyOnWriteArraySet<> ();
 
-    private LoadBalance loadBalance = new LoadBalanceRandom();
+    private LoadBalance loadBalance = new LoadBalanceRandom ();
+
+    private final long MAX_AWAIT_TIME = 5000;
+
+    private final int RETRY_TIMES = 3;
+
+    /**
+     * 服务提供者上线时间较慢问题，通过超时机制以及重试进行解决
+     */
+    private ReentrantLock lock = new ReentrantLock ();
+
+    private Condition connected = lock.newCondition ();
 
     private static class SingletonHolder {
         private static final ConnectionManager instance = new ConnectionManager ();
@@ -90,6 +103,7 @@ public class ConnectionManager {
 
     /**
      * 根据事件类型进行不同的更新
+     *
      * @param type
      * @param peer
      */
@@ -126,6 +140,7 @@ public class ConnectionManager {
                 if (future.isSuccess ()) {
                     RpcClientHandler handler = future.channel ().pipeline ().get (RpcClientHandler.class);
                     connectionMap.put (server, handler);
+                    signalAvailableHandler ();
                     log.info ("connect to server {}:{} success", server.getHost (), server.getPort ());
                 } else {
                     log.error ("Can not connect to remote server, remote peer = " + server);
@@ -136,6 +151,7 @@ public class ConnectionManager {
 
     /**
      * 一个服务提供者，先缓存冲删除，后添加回去。复用连接handler
+     *
      * @param peer
      */
     private void updateServerNode(RpcPeer peer) {
@@ -145,6 +161,7 @@ public class ConnectionManager {
 
     /**
      * 移除并且关闭handler 防止资源泄露
+     *
      * @param server
      */
     private void removeAndCloseHandler(RpcPeer server) {
@@ -158,19 +175,56 @@ public class ConnectionManager {
     }
 
     /**
-     * 根据服务进行负载均衡，获取服务提供者
-     * TODO 通过自旋等待来实现读写互斥
-     *
+     * 根据服务进行负载均衡，获取服务提供者,自选获取提供重试机制。在上述注册时使用了线程池加速注册，
+     * 很容易出现上线慢的问题，牺牲一部分的可用性
      * @param request
      * @return
      */
     public RpcClientHandler borrow(RpcRequest request) throws Exception {
-        RpcPeer peer = loadBalance.route (request.getServiceDescriptor (), connectionMap);
-        RpcClientHandler handler = connectionMap.get (peer);
+        int size;
+        while((size = connectionMap.values ().size ()) <= 0){
+            tryAcquireHandler ();
+        }
+        /**
+         * 重试机制，如果没获取到就再等等看看
+         */
+        RpcPeer selectedPeer = null;
+        int retryCount = 0;
+        while (retryCount < RETRY_TIMES) {
+            selectedPeer = loadBalance.route (request.getServiceDescriptor (), connectionMap);
+            if (selectedPeer != null) {
+                break;
+            }
+            retryCount++;
+        }
+        RpcClientHandler handler = connectionMap.get (selectedPeer);
         if (handler == null) {
-            throw new Exception ("Can not get available connection");
+            throw new Exception ("Can not get available service");
         } else {
             return handler;
+        }
+    }
+
+    private void signalAvailableHandler() {
+        lock.lock ();
+        try {
+            connected.signalAll ();
+        } finally {
+            lock.unlock ();
+        }
+    }
+
+    /**
+     * 尝试获取handler，使用超时机制
+     *
+     * @return
+     */
+    private boolean tryAcquireHandler() throws InterruptedException {
+        lock.lock ();
+        try {
+            return connected.await (MAX_AWAIT_TIME, TimeUnit.MILLISECONDS);
+        } finally {
+            lock.unlock ();
         }
     }
 }
