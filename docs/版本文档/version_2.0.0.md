@@ -12,7 +12,7 @@
   容灾差，可用性差；现在的版本能够实现服务与节点之间多对多的关系。即一个服务可以有多个服务节点进行提供，一个节点
   能提供多个服务。
   - 无法动态监测服务上下线
-
+- [x] 引入心跳机制：通过netty管道中添加handler实现心跳机制，防止过多的僵尸链接占用带宽。
 
 通过Registry中对ConcurrentHashMap(<rpcPeer,handler>)的反转(<service,List<rpcPeer>) 进行真正的负载均衡
 通过ConcurrentHashMap(<rpcPeer,handler>)缓存了多个服务节点之间的连接，同时rpcPeer中增加了该节点提供的服务集合，

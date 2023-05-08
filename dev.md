@@ -289,5 +289,31 @@ zookeeper连接写错
 
 综上，在通信过程中可能会出现一些问题，需要消费者实现相应的容错机制来应对，保证系统的稳定性和可靠性。
 
+## 问题15
+
+### 简述
+
+虽然已经通过了zookeeper实现了动态上下线，但是当很有可能某些节点其实已经“死”了，即不能正常提供服务了
+这些时候空闲节点占据着网络带宽，显然不合适。
+
+### 问题解决
+
+通过netty管道中添加handler实现心跳机制
+
+#### 心跳机制
+
+心跳：在 TPC 中，客户端和服务端建立连接之后，需要定期发送数据包，来通知对方自己还在线，以确保 TPC 连接的有效性。如果一个连接长时间没有心跳，需要及时断开，否则服务端会维护很多无用连接，浪费服务端的资源。
+
+> Netty 已经为我们提供了心跳的 Handler：IdleStateHandler。当连接的空闲时间（读或者写）太长时，IdleStateHandler 将会触发一个 IdleStateEvent 事件，并传递的下一个 
+> Handler（其实就是去调用userEventTriggered方法）。我们可以通过在 Pipeline Handler 中重写 userEventTrigged 方法来处理该事件，注意我们自己的 Handler 需要在 
+> IdleStateHandler 后面。
+> 根据构造函数给的 读写空闲时间 去决定初始化哪些定时任务，分别是：ReaderIdleTimeoutTask(读空闲超时任务)、WriterIdleTimeoutTask(写空闲超时任务)、AllIdleTimeoutTask(读写空闲超时任务)。
+
+
+### 时间线
+
+2023/5/8 - 
+
+
 
 
