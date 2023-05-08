@@ -2,10 +2,7 @@ package com.netty.rpc.handler;
 
 import com.netty.rpc.config.NettyServerConfig;
 import com.netty.rpc.handler.NettyServerHandler;
-import com.rpc.netty.codec.RpcDecoder;
-import com.rpc.netty.codec.RpcEncoder;
-import com.rpc.netty.codec.RpcRequest;
-import com.rpc.netty.codec.RpcResponse;
+import com.rpc.netty.codec.*;
 import com.rpc.netty.utils.ReflectionUtils;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -13,7 +10,10 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.compression.Lz4FrameDecoder;
 import io.netty.handler.codec.compression.Lz4FrameEncoder;
+import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * @description 进行服务器初始化，将需要的处理器添加进pipeline
@@ -31,13 +31,12 @@ public class NettyServerInitializer extends ChannelInitializer<Channel> {
      * will be removed from the {@link ChannelPipeline} of the {@link Channel}.
      *
      * @param ch the {@link Channel} which was registered.
-     * @throws Exception is thrown if an error occurs. In that case it will be handled by
-     *                   {@link #exceptionCaught(ChannelHandlerContext, Throwable)} which will by default close
-     *                   the {@link Channel}.
      */
     @Override
-    protected void initChannel(Channel ch) throws Exception {
+    protected void initChannel(Channel ch) {
         ChannelPipeline pipeline = ch.pipeline ();
+        // 90s 没收到客户端的请求就关闭连接
+        pipeline.addLast (new IdleStateHandler (Beat.BEAT_TIMEOUT,0,0, TimeUnit.SECONDS));
         pipeline.addLast(new Lz4FrameEncoder());
         pipeline.addLast(new Lz4FrameDecoder());
         pipeline.addLast (new RpcDecoder (ReflectionUtils.create (config.getSerializerClass ()),RpcRequest.class));
