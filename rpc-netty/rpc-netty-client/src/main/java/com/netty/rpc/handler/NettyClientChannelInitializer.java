@@ -8,6 +8,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.compression.Lz4FrameDecoder;
 import io.netty.handler.codec.compression.Lz4FrameEncoder;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -48,6 +49,7 @@ public class NettyClientChannelInitializer extends ChannelInitializer<Channel> {
         pipeline.addLast (new Lz4FrameEncoder ());
         pipeline.addLast (new Lz4FrameDecoder ());
         pipeline.addLast (new RpcEncoder (ReflectionUtils.create (config.getSerializerClass ()), RpcRequest.class));
+        pipeline.addLast (new LengthFieldBasedFrameDecoder (65535,0,4,0,0));
         pipeline.addLast (new RpcDecoder (ReflectionUtils.create (config.getSerializerClass ()), RpcResponse.class));
         pipeline.addLast (new RpcClientHandler ());
     }
