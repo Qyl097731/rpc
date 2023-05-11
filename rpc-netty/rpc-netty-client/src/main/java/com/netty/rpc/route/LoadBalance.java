@@ -63,9 +63,21 @@ public interface LoadBalance {
     }
 
     /**
-     * 负载均衡接口方法
+     * 负载均衡接口方法 Round Robin 、 Random
      * @param serviceProviders
-     * @return
+     * @return 返回选择的服务器
      */
-    RpcPeer doRoute(List<RpcPeer> serviceProviders);
+    default RpcPeer doRoute(List<RpcPeer> serviceProviders){
+        throw new UnsupportedOperationException("不支持该服务");
+    }
+
+    /**
+     * 负载均衡接口方法 LFU
+     * @param serviceName
+     * @param serviceProviders
+     * @return 返回选择的服务器
+     */
+    default RpcPeer doRoute(String serviceName,List<RpcPeer> serviceProviders){
+        throw new UnsupportedOperationException("不支持该服务");
+    }
 }
