@@ -4,7 +4,7 @@ import com.netty.rpc.handler.NettyClientChannelInitializer;
 import com.netty.rpc.config.NettyClientConfig;
 import com.netty.rpc.route.LoadBalance;
 import com.netty.rpc.handler.RpcClientHandler;
-import com.netty.rpc.route.impl.LoadBalanceRandom;
+import com.netty.rpc.route.impl.LoadBalanceLru;
 import com.rpc.netty.codec.RpcRequest;
 import com.rpc.netty.protocol.RpcPeer;
 import com.rpc.netty.protocol.ServiceDescriptor;
@@ -43,7 +43,7 @@ public class ConnectionManager {
 
     private final CopyOnWriteArraySet<RpcPeer> serviceCache = new CopyOnWriteArraySet<> ();
 
-    private LoadBalance loadBalance = new LoadBalanceRandom ();
+    private LoadBalance loadBalance = new LoadBalanceLru ();
 
     private final long MAX_AWAIT_TIME = 5000;
 
@@ -223,7 +223,6 @@ public class ConnectionManager {
      */
     private boolean tryAcquireHandler() throws InterruptedException {
         lock.lock ();
-        log.info (connectionMap.values().toString());
         try {
             return connected.await (MAX_AWAIT_TIME, TimeUnit.MILLISECONDS);
         } finally {

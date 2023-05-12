@@ -1,14 +1,13 @@
 package com.netty.rpc;
 
-import com.netty.rpc.connect.ConnectionManager;
 import com.netty.rpc.service.AnnotationService;
 import com.netty.rpc.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
@@ -21,17 +20,25 @@ import static org.hamcrest.Matchers.closeTo;
 @Slf4j
 public class NettyServerTest {
     private static NettyClient client;
-    private static NettyServer server;
+    private static NettyServer[] cluster;
+
 
     @BeforeAll
     static void setUp() throws Exception {
-        server = new NettyServer ();
+        cluster = new NettyServer[]{
+                new NettyServer ("127.0.0.1", 3000),
+                new NettyServer ("127.0.0.1", 3001),
+                new NettyServer ("127.0.0.1", 3002)
+        };
         client = new NettyClient ();
     }
 
     @AfterAll
     static void tearDown() {
-        server.stop ();
+        for (NettyServer server : cluster) {
+            server.stop ();
+        }
+        cluster = null;
         client = null;
     }
 
@@ -56,7 +63,7 @@ public class NettyServerTest {
     void testResponseTimeWithResponse() {
         long start = System.currentTimeMillis ();
         UserService service = client.getProxy (UserService.class, "");
-        List<Integer> response = service.selectIds();
+        List<Integer> response = service.selectIds ();
         long end = System.currentTimeMillis ();
         double cost = end - start;
         assertThat ("Response time", cost, closeTo (250, 250));
@@ -142,7 +149,7 @@ public class NettyServerTest {
         }
         long end = System.currentTimeMillis ();
         double cost = end - start;
-        assertThat ("Response time", cost, closeTo (10*1000, 10*1000)); // 判断响应时间是否在预期范围内
+        assertThat ("Response time", cost, closeTo (10 * 1000, 10 * 1000)); // 判断响应时间是否在预期范围内
         log.info ("Sync call total-time-cost:{}ms, req/s={}", cost, threadNum * requestNum / cost * 1000);
     }
 
@@ -197,6 +204,32 @@ public class NettyServerTest {
 
         AnnotationService serviceVersion1 = client.getProxy (AnnotationService.class, "1.0");
         Assertions.assertEquals (1, serviceVersion1.getVersion ());
+    }
+
+    /**
+     * 测试负载均衡策略，是否选择正确的服务节点(除了LRU）
+     */
+    @Test
+    void testRoadBalanceWhetherChooseCorrectlyExcludeLru() {
+        UserService service = client.getProxy (UserService.class, "");
+        for (int i = 0; i < 10; i++) {
+            service.sayHello ();
+        }
+    }
+
+    /**
+     * 测试LRU负载均衡策略，是否选择正确的服务节点(LRU）
+     */
+    @Test
+    void testRoadBalanceLRUWhetherChooseCorrectly() throws Exception {
+        UserService service = client.getProxy (UserService.class, "");
+        for (int i = 0; i < 4; i++) {
+            service.sayHello ();
+            if (i == 2){
+                new NettyServer ("127.0.0.1", 3004);
+                TimeUnit.MILLISECONDS.sleep (200);
+            }
+        }
     }
 
     @Test
