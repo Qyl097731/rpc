@@ -198,6 +198,7 @@ public class ConnectionManager {
             }
             retryCount++;
         }
+        log.info ("peer {}:{} ", selectedPeer.getHost (), selectedPeer.getPort ());
         RpcClientHandler handler = connectionMap.get (selectedPeer);
         if (handler == null) {
             throw new Exception ("Can not get available service");
@@ -222,6 +223,7 @@ public class ConnectionManager {
      */
     private boolean tryAcquireHandler() throws InterruptedException {
         lock.lock ();
+        log.info (connectionMap.values().toString());
         try {
             return connected.await (MAX_AWAIT_TIME, TimeUnit.MILLISECONDS);
         } finally {

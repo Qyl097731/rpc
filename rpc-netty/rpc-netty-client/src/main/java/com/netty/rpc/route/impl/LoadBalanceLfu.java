@@ -2,6 +2,7 @@ package com.netty.rpc.route.impl;
 
 import com.netty.rpc.route.LoadBalance;
 import com.rpc.netty.protocol.RpcPeer;
+import com.rpc.netty.protocol.ServiceDescriptor;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.*;
@@ -14,12 +15,12 @@ import java.util.concurrent.ConcurrentMap;
  * @author: qyl
  */
 public class LoadBalanceLfu implements LoadBalance {
-    private ConcurrentMap<String, HashMap<RpcPeer, Integer>> cache = new ConcurrentHashMap<> (10);
+    private ConcurrentMap<ServiceDescriptor, HashMap<RpcPeer, Integer>> cache = new ConcurrentHashMap<> (10);
     private long expireTime = 0;
     private final int MAX_TIME = 10000;
 
     @Override
-    public RpcPeer doRoute(String serviceName, List<RpcPeer> serviceProviders) {
+    public RpcPeer doRoute(ServiceDescriptor service, List<RpcPeer> serviceProviders) {
         if (CollectionUtils.isEmpty (serviceProviders)) {
             throw new RuntimeException ("No available service");
         }
@@ -30,10 +31,10 @@ public class LoadBalanceLfu implements LoadBalance {
         }
 
         // 服务节点缓存信息更新
-        HashMap<RpcPeer, Integer> usedFrequencyMap = cache.get (serviceName);
+        HashMap<RpcPeer, Integer> usedFrequencyMap = cache.get (service);
         if (usedFrequencyMap == null) {
             usedFrequencyMap = new HashMap<> ();
-            cache.putIfAbsent (serviceName, usedFrequencyMap);
+            cache.putIfAbsent (service, usedFrequencyMap);
         }
         for (RpcPeer provider : serviceProviders) {
             if (!usedFrequencyMap.containsKey (provider) || usedFrequencyMap.get (provider) > MAX_TIME) {
@@ -51,8 +52,10 @@ public class LoadBalanceLfu implements LoadBalance {
 
         // 挑选最近最少的服务节点
         RpcPeer chosen = null;
+        int minTime = Integer.MAX_VALUE;
         for (RpcPeer rpcPeer : serviceProviders) {
-            if (usedFrequencyMap.containsKey (rpcPeer) && usedFrequencyMap.get (rpcPeer) < usedFrequencyMap.get (chosen)) {
+            if (usedFrequencyMap.containsKey (rpcPeer) && usedFrequencyMap.get (rpcPeer) < minTime) {
+                minTime = usedFrequencyMap.get(rpcPeer);
                 chosen = rpcPeer;
             }
         }

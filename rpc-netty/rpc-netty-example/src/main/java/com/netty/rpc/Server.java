@@ -12,6 +12,6 @@ import java.io.IOException;
  */
 public class Server {
     public static void main(String[] args) throws Exception {
-        NettyServer server = new NettyServer ();
+        NettyServer server = new NettyServer ("localhost",3000);
     }
 }

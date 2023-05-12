@@ -5,10 +5,7 @@ import com.rpc.netty.protocol.RpcPeer;
 import com.rpc.netty.protocol.ServiceDescriptor;
 import org.apache.commons.collections4.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -31,7 +28,7 @@ public interface LoadBalance {
         if (serverProviderMap != null) {
             List<RpcPeer> serviceProviders = serverProviderMap.get (service);
             if (CollectionUtils.isNotEmpty (serviceProviders)) {
-                return doRoute (serviceProviders);
+                return doRoute (service,serviceProviders);
             }
         }
         return null;
@@ -63,21 +60,12 @@ public interface LoadBalance {
     }
 
     /**
-     * 负载均衡接口方法 Round Robin 、 Random
+     * 负载均衡接口方法 LFU、Round Robin 、 Random、LRU、ConsistentHash
+     * @param service
      * @param serviceProviders
      * @return 返回选择的服务器
      */
-    default RpcPeer doRoute(List<RpcPeer> serviceProviders){
-        throw new UnsupportedOperationException("不支持该服务");
-    }
-
-    /**
-     * 负载均衡接口方法 LFU
-     * @param serviceName
-     * @param serviceProviders
-     * @return 返回选择的服务器
-     */
-    default RpcPeer doRoute(String serviceName,List<RpcPeer> serviceProviders){
+    default RpcPeer doRoute(ServiceDescriptor service,List<RpcPeer> serviceProviders){
         throw new UnsupportedOperationException("不支持该服务");
     }
 }

@@ -3,6 +3,7 @@ package com.netty.rpc.route.impl;
 import com.google.common.hash.Hashing;
 import com.netty.rpc.route.LoadBalance;
 import com.rpc.netty.protocol.RpcPeer;
+import com.rpc.netty.protocol.ServiceDescriptor;
 
 import java.util.List;
 
@@ -13,8 +14,8 @@ import java.util.List;
  */
 public class LoadBalanceConsistentHash implements LoadBalance {
     @Override
-    public RpcPeer doRoute(String serviceName, List<RpcPeer> serviceProviders) {
-        int index = Hashing.consistentHash (serviceName.hashCode (),serviceProviders.size ());
+    public RpcPeer doRoute(ServiceDescriptor service, List<RpcPeer> serviceProviders) {
+        int index = Hashing.consistentHash (service.hashCode (),serviceProviders.size ());
         return serviceProviders.get (index);
     }
 }

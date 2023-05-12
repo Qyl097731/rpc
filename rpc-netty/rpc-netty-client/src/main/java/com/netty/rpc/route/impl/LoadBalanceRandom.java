@@ -2,6 +2,7 @@ package com.netty.rpc.route.impl;
 
 import com.netty.rpc.route.LoadBalance;
 import com.rpc.netty.protocol.RpcPeer;
+import com.rpc.netty.protocol.ServiceDescriptor;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -13,7 +14,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class LoadBalanceRandom implements LoadBalance {
     @Override
-    public RpcPeer doRoute(List<RpcPeer> serviceProviders) {
+    public RpcPeer doRoute(ServiceDescriptor service,List<RpcPeer> serviceProviders) {
         int size = serviceProviders.size();
         int random = ThreadLocalRandom.current().nextInt(size);
         return serviceProviders.get(random);

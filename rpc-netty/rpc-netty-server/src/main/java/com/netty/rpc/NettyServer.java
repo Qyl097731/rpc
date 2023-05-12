@@ -25,21 +25,21 @@ public class NettyServer implements LifeCycle {
     private final EventLoopGroup bossGroup = new NioEventLoopGroup ();
     private final EventLoopGroup workerGroup = new NioEventLoopGroup ();
     private Channel channel;
-
+    private String host;
+    private int port;
     private ServerBootstrap server;
-
-    private static final String host = "127.0.0.1";
-    private static final int port = 3000;
     private static final String[] BASE_PACKAGES = new String[] {"com.netty.rpc.service"};
     private final ServiceManager manager;
 
-    public NettyServer() throws Exception {
+    public NettyServer(String host,int port) throws Exception {
+        this.host = host;
+        this.port = port;
         manager = ServiceManager.getInstance (host,port);
         if (Objects.isNull (manager)){
             log.error("注册中心初始化失败");
             throw new RuntimeException("注册中心初始化失败");
         }
-        log.info("注册中心初始化成功");
+        log.info("注册中心初始化成功 , " + host + ":" + port);
         manager.registerServices (BASE_PACKAGES);
         start ();
     }
@@ -67,9 +67,9 @@ public class NettyServer implements LifeCycle {
         try {
             if (channel != null) {
                 channel.close ().sync ();
-                bossGroup.shutdownGracefully ().sync ();
-                workerGroup.shutdownGracefully ().sync ();
             }
+            bossGroup.shutdownGracefully ().sync ();
+            workerGroup.shutdownGracefully ().sync ();
         } catch (InterruptedException e) {
             throw new RuntimeException (e);
         }
