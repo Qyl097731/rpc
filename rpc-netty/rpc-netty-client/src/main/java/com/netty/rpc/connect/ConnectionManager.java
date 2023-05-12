@@ -63,6 +63,7 @@ public class ConnectionManager {
     private ConnectionManager() {
         NettyClientConfig config = new NettyClientConfig ();
         config.setSerializerClass (Serializers.KRYO);
+//        config.setSerializerClass (Serializers.HESSIAN2);
         bootstrap.group (new NioEventLoopGroup ())
                 .channel (NioSocketChannel.class)
                 .option (ChannelOption.TCP_NODELAY, true)
