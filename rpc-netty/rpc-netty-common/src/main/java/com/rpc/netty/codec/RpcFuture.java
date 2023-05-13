@@ -1,13 +1,10 @@
 package com.rpc.netty.codec;
 
-import com.sun.corba.se.impl.orbutil.concurrent.Sync;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.*;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 异步返回，阻塞客户，尽量不影响服务器吞吐量
